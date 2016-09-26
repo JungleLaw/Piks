@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- theme -->
+    <color name="primary">#FFE12828</color>
+    <color name="primary_dark">#C32727</color>
+    <color name="accent">#FF0099CC</color>
+
+    <!-- colors -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="trasient">#00000000</color>
+    <color name="trasient_black_dark">#70000000</color>
+    <color name="white_dark">#E5E5E5</color>
+    <color name="black_light">#727272</color>
+    <color name="black_dark">#363436</color>
+    <color name="grey">#757575</color>
+    <!-- COLOR FOR PHOTOS -->
+    <color name="color_for_photo_fri">#2E2D2B</color>
+    <color name="color_for_photo_sec">#454440</color>
+    <color name="color_for_photo_thi">#696761</color>
+    <color name="color_for_photo_fou">#A6A39A</color>
+    <color name="color_for_photo_fif">#C9C6BB</color>
+</resources>

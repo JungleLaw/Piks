@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:slidemenu="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                slidemenu:layout_role="content">
+
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:orientation="vertical">-->
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view_medias"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never"/>
+
+    <com.law.piks.widget.recyclerviewfastscroll.FastScroller
+        android:id="@+id/fast_scroller"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:orientation="vertical"/>
+
+    <!--<com.law.think.frame.view.GridViewWithHeaderAndFooter-->
+    <!--android:id="@+id/gridview_medias"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:overScrollMode="never"/>-->
+    <!--</LinearLayout>-->
+    <com.law.think.frame.widget.TitleBar
+        android:id="@+id/titlebar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/abc_action_bar_default_height_material"
+        android:clipToPadding="true"
+        app:backgroudColor="@color/trasient"
+        app:leftDrawableID="@drawable/icon_menu"
+        app:rightDrawableID="@drawable/icon_more_hor"
+        app:titleTextSize="20sp"/>
+    <!--app:titleText="Piks"-->
+</RelativeLayout>

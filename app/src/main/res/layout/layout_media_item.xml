@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/layout_photos_item_root"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/black"
+                android:clickable="true"
+                android:descendantFocusability="blocksDescendants"
+                android:focusable="false">
+
+    <ImageView
+        android:id="@+id/img_photos_item"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"/>
+
+    <com.law.think.frame.widget.labelview.LabelView
+        android:id="@+id/lable_photos_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="5dip"
+        android:layout_marginStart="10dip"
+        app:label_BackgroundColor="@color/white"
+        app:label_TextSize="12sp"/>
+
+</RelativeLayout>

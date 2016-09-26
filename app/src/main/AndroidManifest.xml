@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.law.piks">
+
+    <!-- 往SDCard写入数据权限 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!-- 从SDCard读取数据权限 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
+    <application
+        android:name=".app.PiksApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_piks"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme.NoActionbar">
+        <activity android:name=".MainActivity"/>
+        <activity
+            android:name=".home.HomeActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity
+            android:name=".splash.SplashActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity
+            android:name=".other.AboutActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity
+            android:name=".splash.IntroActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity
+            android:name=".other.AboutMeActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity
+            android:name=".home.GalleryActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity
+            android:name=".splash.DispatchActivity"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="com.law.piks.app.CustomGlideModule"
+            android:value="GlideModule"/>
+    </application>
+</manifest>

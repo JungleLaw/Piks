@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- LiteProgressBar -->
+    <declare-styleable name="ThinkProgressBar">
+        <attr name="cellLenght" format="dimension" />
+        <attr name="cellDivider" format="dimension" />
+        <attr name="displayText" format="string" />
+        <attr name="displayTextColor" format="color" />
+        <attr name="displayTextSize" format="dimension" />
+    </declare-styleable>
+
+</resources>

@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">Piks</string>
+    <string name="key_internal_uri_extsdcard_photos">uri_extsdcard_photos</string>
+    <string name="album_size">%s 照片</string>
+    <!-- media info-->
+    <string name="media_title">%1$d / %2$d</string>
+    <string name="media_name">标题 : %s</string>
+    <string name="media_time">时间 : %s</string>
+    <string name="media_width">宽度 : %d</string>
+    <string name="media_height">高度 : %d</string>
+    <string name="media_orientation">方向 : %d</string>
+    <string name="media_size">尺寸 : %s</string>
+    <string name="media_path">路径 : %s</string>
+    <string name="share">分享</string>
+    <!-- secondary menu -->
+    <string name="about">关于</string>
+    <string name="about_author">关于作者</string>
+    <string name="author">作者</string>
+    <string name="check_introduce">查看欢迎页</string>
+    <string name="thx">感谢开源项目及资源支持</string>
+    <string name="check_update">检查更新</string>
+    <string name="copyright_display">Copyright © 2016 JungleLaw.\n All Right Reserved</string>
+    <!-- about me -->
+    <string name="location">坐标</string>
+    <string name="location_display">深圳</string>
+    <string name="weibo">微博</string>
+    <string name="weibo_account">http://weibo.com/u/3511211591</string>
+    <string name="email">邮件</string>
+    <string name="email_account">JungleLaw@live.com</string>
+    <string name="github">Github</string>
+    <string name="github_account">https://github.com/JungleLaw</string>
+    <string name="wechat">微信</string>
+    <!-- about me -->
+    <string name="entry_immediately">立即体验</string>
+</resources>

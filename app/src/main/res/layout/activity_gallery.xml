@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/img_display_parent"
+    android:fitsSystemWindows="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.law.think.frame.widget.bottomsheet.BottomSheetLayout
+        android:id="@+id/bottomsheet_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#ff000000">
+
+            <com.law.piks.view.HackyViewPager
+                android:id="@+id/viewpager_display"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:overScrollMode="never"/>
+
+            <com.law.think.frame.widget.TitleBar
+                android:id="@+id/check_photo_titlebar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/abc_action_bar_default_height_material"
+                android:layout_alignParentTop="true"
+                android:clipToPadding="true"
+                app:backgroudColor="@color/trasient_black_dark"
+                app:leftDrawableID="@drawable/icon_left_arrow"
+                app:rightDrawableID="@drawable/icon_more_vert"
+                app:titleTextSize="20sp"/>
+
+            <LinearLayout
+                android:id="@+id/check_photo_toolsbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="@color/trasient_black_dark"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="50dip"
+                    android:orientation="horizontal"
+                    android:paddingLeft="20dip"
+                    android:paddingRight="20dip">
+
+                    <ImageView
+                        android:id="@+id/img_collect"
+                        android:layout_width="0dip"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:padding="5dip"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/selector_icon_collect"/>
+
+                    <ImageView
+                        android:id="@+id/img_delete"
+                        android:layout_width="0dip"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:padding="5dip"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/selector_icon_del"/>
+
+                    <ImageView
+                        android:id="@+id/img_share"
+                        android:layout_width="0dip"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:padding="5dip"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/selector_icon_share"/>
+
+                    <ImageView
+                        android:id="@+id/img_info"
+                        android:layout_width="0dip"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:padding="5dip"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/selector_icon_info"/>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dip"
+                    android:layout_marginLeft="20dip"
+                    android:layout_marginRight="20dip"
+                    android:background="@color/white"/>
+
+                <TextView
+                    android:id="@+id/text_modified_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="5dip"
+                    android:paddingLeft="20dip"
+                    android:paddingTop="5dip"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"/>
+            </LinearLayout>
+        </RelativeLayout>
+    </com.law.think.frame.widget.bottomsheet.BottomSheetLayout>
+</RelativeLayout>
