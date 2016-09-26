@@ -16,7 +16,6 @@ import com.law.piks.R;
 import com.law.piks.app.base.AppBaseActivity;
 import com.law.piks.home.adapter.AlbumAdapter;
 import com.law.piks.home.adapter.PhotoAdapter;
-import com.law.piks.medias.Configuration;
 import com.law.piks.medias.engine.MediasLoader;
 import com.law.piks.medias.entity.Album;
 import com.law.piks.medias.entity.Media;
@@ -203,7 +202,7 @@ public class HomeActivity extends AppBaseActivity {
         mTitleBar.setTitleViewText("");
 
         mFastScroller.setRecyclerView(mRecyclerViewWithHeaderAndFooter);
-//        mFastScroller.setViewProvider();
+        //        mFastScroller.setViewProvider();
 
         //        mMediaAdapter = new MediaAdapter(this, mMedias, mPeekAndPop);
         //        mMediaAdapter.setOnClickCallback(new MediaAdapter.OnClickCallback() {
@@ -281,7 +280,7 @@ public class HomeActivity extends AppBaseActivity {
         });
         HeaderAndFooterRecyclerViewAdapter adapter = new HeaderAndFooterRecyclerViewAdapter(mPhotoAdapter);
         mRecyclerViewWithHeaderAndFooter.setAdapter(adapter);
-//        ExStaggeredGridLayoutManager staggeredGridLayoutManager = new ExStaggeredGridLayoutManager(Configuration.GalleryConstants.numColumns, StaggeredGridLayoutManager.VERTICAL);
+        //        ExStaggeredGridLayoutManager staggeredGridLayoutManager = new ExStaggeredGridLayoutManager(Configuration.GalleryConstants.numColumns, StaggeredGridLayoutManager.VERTICAL);
         ExStaggeredGridLayoutManager staggeredGridLayoutManager = new ExStaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
         staggeredGridLayoutManager.setSpanSizeLookup(new HeaderSpanSizeLookup((HeaderAndFooterRecyclerViewAdapter) mRecyclerViewWithHeaderAndFooter.getAdapter(), staggeredGridLayoutManager.getSpanCount()));
         mRecyclerViewWithHeaderAndFooter.setLayoutManager(staggeredGridLayoutManager);
