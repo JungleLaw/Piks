@@ -4,6 +4,6 @@
 
     <corners android:radius="@dimen/fastscroll__handle_corner" />
 
-    <solid android:color="@android:color/darker_gray" />
+    <solid android:color="@color/primary" />
 
 </shape>

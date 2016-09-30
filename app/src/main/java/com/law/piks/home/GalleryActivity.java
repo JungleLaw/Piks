@@ -1,14 +1,17 @@
 package com.law.piks.home;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
@@ -16,24 +19,29 @@ import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.law.piks.R;
 import com.law.piks.app.base.AppBaseFragmentActivity;
 import com.law.piks.home.adapter.DisplayPagerAdapter;
 import com.law.piks.medias.entity.Media;
+import com.law.piks.medias.utils.ContentUtils;
 import com.law.piks.view.HackyViewPager;
 import com.law.piks.widget.bottomsheet.MenuSheetView;
+import com.law.think.frame.imageloader.ImageLoader;
 import com.law.think.frame.inject.annotation.ViewInject;
 import com.law.think.frame.inject.annotation.event.OnClick;
 import com.law.think.frame.utils.ConstUtils;
 import com.law.think.frame.utils.Logger;
 import com.law.think.frame.utils.PixelUtils;
 import com.law.think.frame.utils.SDKUtils;
+import com.law.think.frame.utils.ScreenUtils;
 import com.law.think.frame.utils.TimeUtils;
 import com.law.think.frame.widget.TitleBar;
 import com.law.think.frame.widget.bottomsheet.BottomSheetLayout;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -46,6 +54,8 @@ import java.util.List;
 public class GalleryActivity extends AppBaseFragmentActivity implements ViewPager.OnPageChangeListener {
     private static final String MEDIAS = "medias";
     private static final String INDEX = "index";
+
+    public static final int GALLERY_REQUEST_CODE = 0X0001;
 
     private static AlphaAnimation entryAnimation = new AlphaAnimation(0, 1);
     private static AlphaAnimation exitAnimation = new AlphaAnimation(1, 0);
@@ -77,6 +87,9 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     private MenuSheetView menuSheetView;
 
     private AlertDialog mMediaInfoDialog;
+    private ImageView mDeleteDialogImg;
+    private TextView mDeleteDialogDetailText;
+    private AlertDialog mDeleteDialog;
 
     private DisplayPagerAdapter mDisplayPagerAdapter;
     private boolean fullscreenmode = false;
@@ -84,6 +97,9 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
 
     private List<Media> mMedias;
     private int index;
+    private int direction = Direction.NO_DIRECTION;
+    private int lastItemIndex = -1;
+    private boolean modified = false;
 
     public static int getStatusBarHeight(Resources r) {
         int resourceId = r.getIdentifier("status_bar_height", "dimen", "android");
@@ -93,11 +109,11 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         return 0;
     }
 
-    public static void navigateToGallery(Context context, ArrayList<Media> medias, int index) {
-        Intent mIntent = new Intent(context, GalleryActivity.class);
+    public static void navigateToGallery(Activity activity, ArrayList<Media> medias, int index) {
+        Intent mIntent = new Intent(activity, GalleryActivity.class);
         mIntent.putExtra(MEDIAS, medias);
         mIntent.putExtra(INDEX, index);
-        context.startActivity(mIntent);
+        activity.startActivityForResult(mIntent, GALLERY_REQUEST_CODE);
     }
 
     @Override
@@ -169,12 +185,52 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         mMedias.clear();
     }
 
+
+    @Override
+    public void finish() {
+        if (modified) {
+            setResult(RESULT_OK);
+        }
+        super.finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (modified) {
+            setResult(RESULT_OK);
+        }
+        super.onBackPressed();
+    }
+
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
     }
 
     @Override
     public void onPageSelected(int position) {
+        Logger.i("onPageSelected " + position);
+        if (lastItemIndex == -1) {
+            if (position == mMedias.size() - 1) {
+                direction = Direction.LEFT;
+            } else {
+                direction = Direction.RIGHT;
+            }
+        } else {
+            if (lastItemIndex < position) {
+                if (position == mMedias.size() - 1) {
+                    direction = Direction.LEFT;
+                }
+                direction = Direction.RIGHT;
+            } else if (lastItemIndex > position) {
+                if (position == 0) {
+                    direction = Direction.RIGHT;
+                }
+                direction = Direction.LEFT;
+            } else {
+                direction = Direction.RIGHT;
+            }
+        }
+        lastItemIndex = position;
         checkPhotoTitlebar.setTitleViewText(getString(R.string.media_title, position + 1, mMedias.size()));
         mTextModifiedDate.setText(TimeUtils.milliseconds2String(mMedias.get(position).getModifiedDate() * ConstUtils.SEC, new SimpleDateFormat("yyyy年MM月dd日 a HH:mm")));
     }
@@ -185,6 +241,7 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
 
     @OnClick({R.id.img_collect, R.id.img_delete, R.id.img_share, R.id.img_info})
     private void showInfo(View view) {
+        int index = mDisplayViewPager.getCurrentItem();
         switch (view.getId()) {
             case R.id.img_collect:
                 Logger.i("collect");
@@ -196,27 +253,29 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
                 break;
             case R.id.img_delete:
                 Logger.i("delete");
+//                deleteMedia(index);
+                showDeleteMediaDialog(index);
                 break;
             case R.id.img_share:
-                Logger.i("share");
-                if (menuSheetView == null) {
-                    mBottomSheetLayout.setPeekOnDismiss(true);
-                    menuSheetView = new MenuSheetView(GalleryActivity.this, MenuSheetView.MenuType.LIST, getString(R.string.share), new MenuSheetView.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            if (mBottomSheetLayout.isSheetShowing()) {
-                                mBottomSheetLayout.dismissSheet();
-                            }
-                            return true;
-                        }
-                    });
-                    menuSheetView.inflateMenu(R.menu.share_menu);
-                }
-                mBottomSheetLayout.showWithSheetView(menuSheetView);
+                shareMedia(index);
+//                if (menuSheetView == null) {
+//                    mBottomSheetLayout.setPeekOnDismiss(true);
+//                    menuSheetView = new MenuSheetView(GalleryActivity.this, MenuSheetView.MenuType.LIST, getString(R.string.share), new MenuSheetView.OnMenuItemClickListener() {
+//                        @Override
+//                        public boolean onMenuItemClick(MenuItem item) {
+//                            if (mBottomSheetLayout.isSheetShowing()) {
+//                                mBottomSheetLayout.dismissSheet();
+//                            }
+//                            return true;
+//                        }
+//                    });
+//                    menuSheetView.inflateMenu(R.menu.share_menu);
+//                }
+//                mBottomSheetLayout.showWithSheetView(menuSheetView);
                 break;
             case R.id.img_info:
                 Logger.i("info");
-                showMediaInfo(mDisplayViewPager.getCurrentItem());
+                showMediaInfo(index);
                 break;
         }
     }
@@ -271,16 +330,108 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         });
     }
 
+    private void showDeleteMediaDialog(final int index) {
+        if (mDeleteDialog == null) {
+            final View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_delete_media, null);
+            mDeleteDialog = new AlertDialog.Builder(this).setView(dialogView).create();
+            mDeleteDialog.setCanceledOnTouchOutside(true);
+            mDeleteDialogImg = (ImageView) dialogView.findViewById(R.id.dialog_del_img_media);
+            int width = (int) (ScreenUtils.getScreenWidth(this) * 0.85);
+            dialogView.setLayoutParams(new LinearLayout.LayoutParams(width, LinearLayout.LayoutParams.WRAP_CONTENT));
+            mDeleteDialogImg.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, width * 9 / 16));
+            mDeleteDialogDetailText = (TextView) dialogView.findViewById(R.id.dialog_text_media_detail);
+            dialogView.findViewById(R.id.btn_del).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+//                    deleteMedia(index);
+                    modified = true;
+                    switch (direction) {
+                        case Direction.LEFT:
+                            Logger.i("Direction.LEFT");
+                            break;
+                        case Direction.RIGHT:
+                            Logger.i("Direction.RIGHT");
+                            break;
+                        default:
+                            Logger.i("Direction.NO_DIRECTION");
+                    }
+                    deleteMedia(mDisplayViewPager.getCurrentItem(), direction);
+                    if (mDeleteDialog.isShowing())
+                        mDeleteDialog.dismiss();
+                }
+            });
+            dialogView.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mDeleteDialog.isShowing())
+                        mDeleteDialog.dismiss();
+                }
+            });
+        }
+        if (!mDeleteDialog.isShowing()) {
+            mDeleteDialog.show();
+        }
+        ImageLoader.with(this).centerCrop().signature(mMedias.get(index).signature()).load(mMedias.get(index).getPath()).placeholder(R.color.black).into(mDeleteDialogImg);
+//        mDeleteDialogImg.setImageURI(Uri.fromFile(new File(mMedias.get(index).getPath())));
+        mDeleteDialogDetailText.setText(getMediaDetail(mMedias.get(index)));
+    }
+
+    private boolean deleteMedia(int index, int viewPagerDirection) {
+        Logger.i("del current " + index);
+        boolean success = true;
+        Media media = mMedias.get(index);
+        File file = new File(media.getPath());
+        if (success = ContentUtils.deleteFile(this, file)) {
+            scanFile(this, new String[]{file.getAbsolutePath()});
+        }
+        switch (viewPagerDirection) {
+            case Direction.LEFT:
+                Logger.i("Direction.LEFT");
+                break;
+            case Direction.RIGHT:
+                Logger.i("Direction.RIGHT");
+                break;
+            default:
+                Logger.i("Direction.NO_DIRECTION");
+        }
+        mMedias.remove(index);
+        mDisplayPagerAdapter.notifyDataSetChanged();
+        checkPhotoTitlebar.setTitleViewText(getString(R.string.media_title, mDisplayViewPager.getCurrentItem() + 1, mMedias.size()));
+        mTextModifiedDate.setText(TimeUtils.milliseconds2String(mMedias.get(mDisplayViewPager.getCurrentItem()).getModifiedDate() * ConstUtils.SEC, new SimpleDateFormat("yyyy年MM月dd日 a HH:mm")));
+        return success;
+    }
+
+    private void shareMedia(int index) {
+        Media media = mMedias.get(index);
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType(media.getMimeType());
+        share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(media.getPath())));
+        startActivity(Intent.createChooser(share, "分享"));
+    }
+
     private void showMediaInfo(int position) {
         Media media = mMedias.get(position);
         if (mMediaInfoDialog == null) {
-            View view = getLayoutInflater().inflate(R.layout.layout_media_info_dialog, null);
+            View view = getLayoutInflater().inflate(R.layout.dialog_media_info, null);
             mMediaInfoDialog = new AlertDialog.Builder(this).setView(view).create();
             mMediaInfoDialog.setCanceledOnTouchOutside(true);
             mDialogCloseImgBtn = (ImageButton) view.findViewById(R.id.imgBtn_close);
             mDialogTitleText = (TextView) view.findViewById(R.id.text_title);
             mDialogContentText = (TextView) view.findViewById(R.id.text_media_info);
         }
+
+        mDialogTitleText.setText(getString(R.string.media_title, position + 1, mMedias.size()));
+        mDialogContentText.setText(getMediaDetail(media));
+        mDialogCloseImgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mMediaInfoDialog.dismiss();
+            }
+        });
+        mMediaInfoDialog.show();
+    }
+
+    private String getMediaDetail(Media media) {
         StringBuilder sb = new StringBuilder();
         sb.append(getString(R.string.media_name, media.getName())).append("\n");
         sb.append(getString(R.string.media_time, TimeUtils.milliseconds2String(media.getModifiedDate() * ConstUtils.SEC, new SimpleDateFormat("yyyy年MM月dd日 a HH:mm")))).append("\n");
@@ -292,17 +443,7 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         DecimalFormat df = new DecimalFormat(style);
         sb.append(getString(R.string.media_size, df.format((float) media.getSize() / ConstUtils.MB))).append("\n");
         sb.append(getString(R.string.media_path, media.getPath()));
-
-
-        mDialogTitleText.setText(getString(R.string.media_title, position + 1, mMedias.size()));
-        mDialogContentText.setText(sb.toString());
-        mDialogCloseImgBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mMediaInfoDialog.dismiss();
-            }
-        });
-        mMediaInfoDialog.show();
+        return sb.toString();
     }
 
     public void toggleUI() {
@@ -347,5 +488,19 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
                 //                changeBackGroundColor();
             }
         });
+    }
+
+    public void scanFile(Context context, String[] path) {
+        MediaScannerConnection.scanFile(context, path, null, null);
+    }
+
+    public void scanFile(Context context, String[] path, MediaScannerConnection.OnScanCompletedListener onScanCompletedListener) {
+        MediaScannerConnection.scanFile(context, path, null, onScanCompletedListener);
+    }
+
+    private class Direction {
+        public static final int LEFT = -1;
+        public static final int RIGHT = 1;
+        public static final int NO_DIRECTION = 0;
     }
 }

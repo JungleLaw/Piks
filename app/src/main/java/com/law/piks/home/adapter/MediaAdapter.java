@@ -93,12 +93,12 @@ public class MediaAdapter extends BaseAdapter {
         } else {
             mHolder = (ViewHolder) convertView.getTag();
         }
-        if (media.isGif()) {
-            mHolder.mLabelView.setVisibility(View.VISIBLE);
-            mHolder.mLabelView.setLabel("GIF");
-        } else {
-            mHolder.mLabelView.setVisibility(View.GONE);
-        }
+//        if (media.isGif()) {
+//            mHolder.mLabelView.setVisibility(View.VISIBLE);
+//            mHolder.mLabelView.setLabel("GIF");
+//        } else {
+//            mHolder.mLabelView.setVisibility(View.GONE);
+//        }
         mHolder.mRootLayout.setOnClickListener(new OnMediaClickListener(position));
         //        mHolder.mRootLayout.setOnLongClickListener(new OnMediaLongClickListener(position));
         mPeekAndPop.addLongClickView(mHolder.mRootLayout, position);
@@ -141,8 +141,8 @@ public class MediaAdapter extends BaseAdapter {
         public RelativeLayout mRootLayout;
         @ViewInject(R.id.img_photos_item)
         public ImageView mImageView;
-        @ViewInject(R.id.lable_photos_item)
-        public LabelView mLabelView;
+//        @ViewInject(R.id.lable_photos_item)
+//        public LabelView mLabelView;
 
         public ViewHolder(View view) {
             ThinkInject.bind(this, view);

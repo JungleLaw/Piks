@@ -1,6 +1,8 @@
 package com.law.piks.home;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -34,6 +36,7 @@ import com.law.think.frame.utils.Logger;
 import com.law.think.frame.utils.ScreenUtils;
 import com.law.think.frame.widget.ThinkToast;
 import com.law.think.frame.widget.TitleBar;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,8 +105,8 @@ public class HomeActivity extends AppBaseActivity {
         mAlbumName = (TextView) mMediasCoverHeaderView.findViewById(R.id.text_album_name);
         mAlbumSize = (TextView) mMediasCoverHeaderView.findViewById(R.id.text_album_size);
 
-        //        mPeekAndPop = new PeekAndPop.Builder(this).blurBackground(false).peekLayout(R.layout.layout_home_peek_and_pop).parentViewGroupToDisallowTouchEvents(mGridViewWithHeaderAndFooter).build();
-        mPeekAndPop = new PeekAndPop.Builder(this).blurBackground(false).peekLayout(R.layout.layout_home_peek_and_pop).parentViewGroupToDisallowTouchEvents(mRecyclerViewWithHeaderAndFooter).build();
+        mPeekAndPop = new PeekAndPop.Builder(this).blurBackground(true).peekLayout(R.layout.layout_home_peek_and_pop).parentViewGroupToDisallowTouchEvents(mRecyclerViewWithHeaderAndFooter).build();
+//        mPeekAndPop = new PeekAndPop.Builder(this).blurBackground(false).peekLayout(R.layout.layout_home_peek_and_pop).parentViewGroupToDisallowTouchEvents(mRecyclerViewWithHeaderAndFooter).build();
 
     }
 
@@ -155,7 +158,6 @@ public class HomeActivity extends AppBaseActivity {
                     //                        }
                     //                    });
                     //                    mGridViewWithHeaderAndFooter.setAdapter(mMediaAdapter);
-
                     //                    mPhotoAdapter = new PhotoAdapter(HomeActivity.this, mMedias, mPeekAndPop);
                     //                    mPhotoAdapter.setOnClickCallback(new PhotoAdapter.OnClickCallback() {
                     //                        @Override
@@ -203,8 +205,13 @@ public class HomeActivity extends AppBaseActivity {
         mTitleBar.setTitleViewText("");
 
         mFastScroller.setRecyclerView(mRecyclerViewWithHeaderAndFooter);
-//        mFastScroller.setViewProvider();
-
+        Paint paint = new Paint();
+        paint.setStrokeWidth(Configuration.GalleryConstants.divider);
+        paint.setColor(Color.BLACK);
+        paint.setAntiAlias(true);
+        mRecyclerViewWithHeaderAndFooter.addItemDecoration(
+                new HorizontalDividerItemDecoration.Builder(this).paint(paint).build());
+        //        mFastScroller.setViewProvider();
         //        mMediaAdapter = new MediaAdapter(this, mMedias, mPeekAndPop);
         //        mMediaAdapter.setOnClickCallback(new MediaAdapter.OnClickCallback() {
         //            @Override
@@ -222,7 +229,7 @@ public class HomeActivity extends AppBaseActivity {
         //                new PrefetchAlbums().execute();
         refreshRecyclerView();
 
-        loadMedia();
+        loadMedia(0);
     }
 
     @Override
@@ -247,8 +254,19 @@ public class HomeActivity extends AppBaseActivity {
         ImageLoader.clear(this);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK)
+            return;
+        if (requestCode == GalleryActivity.GALLERY_REQUEST_CODE) {
+            Logger.i("onActivityResult");
+            loadMedia(mAlbumAdapter.getSelectIndex());
+        }
 
-    private void loadMedia() {
+    }
+
+    private void loadMedia(final int albumIndex) {
         showProgress();
         MediasLoader.getInstance().loadPhotos(this, new MediasLoader.PhotosLoadHandler() {
             @Override
@@ -257,9 +275,9 @@ public class HomeActivity extends AppBaseActivity {
                 mAlbums.addAll(albums);
                 dismissProgress();
                 mAlbumAdapter.refresh(mAlbums);
-                updateHeaderView(0);
+                updateHeaderView(albumIndex);
                 mMedias = new ArrayList<>();
-                mMedias.addAll(mAlbums.get(0).getMedias());
+                mMedias.addAll(mAlbums.get(albumIndex).getMedias());
                 //                mMediaAdapter.refresh(mMedias);
                 mPhotoAdapter.refresh(mMedias);
             }

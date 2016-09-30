@@ -7,7 +7,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/black_dark"
+        android:background="@color/black"
         android:orientation="horizontal"
         android:padding="5dip">
 
@@ -37,8 +37,8 @@
         android:id="@+id/text_media_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/black_light"
-        android:padding="5dip"
+        android:background="@color/black_dark"
+        android:padding="4dip"
         android:textColor="@color/white_dark"
-        android:textSize="20sp"/>
+        android:textSize="16sp"/>
 </LinearLayout>

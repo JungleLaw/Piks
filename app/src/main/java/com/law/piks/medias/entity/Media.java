@@ -73,6 +73,10 @@ public class Media implements Parcelable, Serializable {
         height = in.readInt();
     }
 
+    public String getMimeType() {
+        return MediaUtils.getMimeType(path);
+    }
+
     public Media() {
     }
 

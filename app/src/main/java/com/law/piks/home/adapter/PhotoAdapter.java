@@ -5,10 +5,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 
 import com.law.piks.R;
 import com.law.piks.medias.Configuration;
@@ -69,37 +68,72 @@ public class PhotoAdapter extends RecyclerView.Adapter {
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.layout_media_item, null);
-        view.findViewById(R.id.layout_photos_item_root).setLayoutParams(new AbsListView.LayoutParams(Configuration.GalleryConstants.lenght, Configuration.GalleryConstants.lenght));
+        View view = LayoutInflater.from(mContext).inflate(R.layout.layout_photo_column_item, null);
+        LinearLayout mLayout = (LinearLayout) view.findViewById(R.id.root_linearlayout);
+        for (int i = 0; i < Configuration.GalleryConstants.numColumns; i++) {
+            mLayout.addView(getItemView());
+            if (i != (Configuration.GalleryConstants.numColumns - 1)) {
+                mLayout.addView(getSpacingView());
+            }
+        }
         return new PhotoViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-        final Media media = mMedias.get(position);
-        PhotoViewHolder mHolder = (PhotoViewHolder) holder;
-        if (media.isGif()) {
-            mHolder.mLabelView.setVisibility(View.VISIBLE);
-            mHolder.mLabelView.setLabel("GIF");
+        final Media[] medias = new Media[Configuration.GalleryConstants.numColumns];
+        int size = 0;
+        if ((position + 1) * Configuration.GalleryConstants.numColumns > mMedias.size()) {
+            size = mMedias.size() - position * Configuration.GalleryConstants.numColumns;
         } else {
-            mHolder.mLabelView.setVisibility(View.GONE);
+            size = Configuration.GalleryConstants.numColumns;
         }
-        if (mOnClickCallback != null) {
-            mHolder.mRootLayout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mOnClickCallback.OnClickCallback(position);
+        for (int i = 0; i < Configuration.GalleryConstants.numColumns; i++) {
+            if (i < size) {
+                medias[i] = mMedias.get(position * Configuration.GalleryConstants.numColumns + i);
+            } else {
+                medias[i] = null;
+            }
+        }
+        PhotoViewHolder mHolder = (PhotoViewHolder) holder;
+        for (int i = 0; i < Configuration.GalleryConstants.numColumns; i++) {
+            View view = mHolder.mRootLayout.getChildAt(i * 2);
+            if (medias[i] != null) {
+                view.setVisibility(View.VISIBLE);
+                ImageView mImageView = (ImageView) view.findViewById(R.id.img_photos_item);
+                LabelView mLabelView = (LabelView) view.findViewById(R.id.lable_photos_item);
+                ImageLoader.with(mContext).centerCrop().load(medias[i].getPath()).signature(medias[i].signature()).placeholder(COLORSID[(position * Configuration.GalleryConstants.numColumns + i) % COLORSID.length]).into(mImageView);
+                if (medias[i].isGif()) {
+                    mLabelView.setVisibility(View.VISIBLE);
+                    mLabelView.setLabel("GIF");
+                } else {
+                    mLabelView.setVisibility(View.GONE);
                 }
-            });
+                mPeekAndPop.addLongClickView(view, position * Configuration.GalleryConstants.numColumns + i);
+                if (mOnClickCallback != null) {
+                    final int index = i;
+                    view.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mOnClickCallback.OnClickCallback(position * Configuration.GalleryConstants.numColumns + index);
+                        }
+                    });
+                }
+            } else {
+                view.setVisibility(View.INVISIBLE);
+            }
         }
-        //        mHolder.mRootLayout.setOnLongClickListener(new OnMediaLongClickListener(position));
-        mPeekAndPop.addLongClickView(mHolder.mRootLayout, position);
-        ImageLoader.with(mContext).centerCrop().signature(media.signature()).placeholder(COLORSID[position % COLORSID.length]).thumbnail(0.5f).load(media.getPath()).into(mHolder.mImageView);
     }
 
     @Override
     public int getItemCount() {
-        return mMedias == null ? 0 : mMedias.size();
+        if (mMedias == null)
+            return 0;
+        if (mMedias.size() % Configuration.GalleryConstants.numColumns == 0) {
+            return mMedias.size() <= Configuration.GalleryConstants.numColumns ? 1 : mMedias.size() / Configuration.GalleryConstants.numColumns;
+        } else {
+            return mMedias.size() / Configuration.GalleryConstants.numColumns + 1;
+        }
     }
 
     public void setOnClickCallback(OnClickCallback onClickCallback) {
@@ -131,16 +165,24 @@ public class PhotoAdapter extends RecyclerView.Adapter {
     }
 
     public class PhotoViewHolder extends RecyclerView.ViewHolder {
-        @ViewInject(R.id.layout_photos_item_root)
-        public RelativeLayout mRootLayout;
-        @ViewInject(R.id.img_photos_item)
-        public ImageView mImageView;
-        @ViewInject(R.id.lable_photos_item)
-        public LabelView mLabelView;
+        @ViewInject(R.id.root_linearlayout)
+        public LinearLayout mRootLayout;
 
         public PhotoViewHolder(View view) {
             super(view);
             ThinkInject.bind(this, view);
         }
+    }
+
+    private View getItemView() {
+        View view = LayoutInflater.from(mContext).inflate(R.layout.layout_media_item, null);
+        view.findViewById(R.id.layout_photos_item_root).setLayoutParams(new LinearLayout.LayoutParams(Configuration.GalleryConstants.lenght, Configuration.GalleryConstants.lenght));
+        return view;
+    }
+
+    private View getSpacingView() {
+        View view = new View(mContext);
+        view.setLayoutParams(new LinearLayout.LayoutParams(Configuration.GalleryConstants.divider, Configuration.GalleryConstants.lenght));
+        return view;
     }
 }
