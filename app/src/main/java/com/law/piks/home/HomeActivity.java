@@ -267,6 +267,7 @@ public class HomeActivity extends AppBaseActivity {
     }
 
     private void loadMedia(final int albumIndex) {
+        Logger.i("loadMedia " + albumIndex);
         showProgress();
         MediasLoader.getInstance().loadPhotos(this, new MediasLoader.PhotosLoadHandler() {
             @Override

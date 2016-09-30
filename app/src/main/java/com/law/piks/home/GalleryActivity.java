@@ -52,11 +52,9 @@ import java.util.List;
  */
 
 public class GalleryActivity extends AppBaseFragmentActivity implements ViewPager.OnPageChangeListener {
+    public static final int GALLERY_REQUEST_CODE = 0X0001;
     private static final String MEDIAS = "medias";
     private static final String INDEX = "index";
-
-    public static final int GALLERY_REQUEST_CODE = 0X0001;
-
     private static AlphaAnimation entryAnimation = new AlphaAnimation(0, 1);
     private static AlphaAnimation exitAnimation = new AlphaAnimation(1, 0);
 
@@ -378,7 +376,7 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
 
     private boolean deleteMedia(int index, int viewPagerDirection) {
         Logger.i("del current " + index);
-        boolean success = true;
+        boolean success;
         Media media = mMedias.get(index);
         File file = new File(media.getPath());
         if (success = ContentUtils.deleteFile(this, file)) {

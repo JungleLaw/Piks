@@ -158,6 +158,19 @@ public class PhotoAdapter extends RecyclerView.Adapter {
 
             }
         });
+        notifyDataSetChanged();
+    }
+
+    private View getItemView() {
+        View view = LayoutInflater.from(mContext).inflate(R.layout.layout_media_item, null);
+        view.findViewById(R.id.layout_photos_item_root).setLayoutParams(new LinearLayout.LayoutParams(Configuration.GalleryConstants.lenght, Configuration.GalleryConstants.lenght));
+        return view;
+    }
+
+    private View getSpacingView() {
+        View view = new View(mContext);
+        view.setLayoutParams(new LinearLayout.LayoutParams(Configuration.GalleryConstants.divider, Configuration.GalleryConstants.lenght));
+        return view;
     }
 
     public interface OnClickCallback {
@@ -172,17 +185,5 @@ public class PhotoAdapter extends RecyclerView.Adapter {
             super(view);
             ThinkInject.bind(this, view);
         }
-    }
-
-    private View getItemView() {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.layout_media_item, null);
-        view.findViewById(R.id.layout_photos_item_root).setLayoutParams(new LinearLayout.LayoutParams(Configuration.GalleryConstants.lenght, Configuration.GalleryConstants.lenght));
-        return view;
-    }
-
-    private View getSpacingView() {
-        View view = new View(mContext);
-        view.setLayoutParams(new LinearLayout.LayoutParams(Configuration.GalleryConstants.divider, Configuration.GalleryConstants.lenght));
-        return view;
     }
 }
