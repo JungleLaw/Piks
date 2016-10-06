@@ -2,15 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:icon="@drawable/ic_piks"
-        android:title="wechat"/>
+        android:id="@+id/menu_wechat_item"
+        android:icon="@drawable/icon_logo_wechat_nor"
+        android:title="微信好友" />
     <item
-        android:icon="@drawable/ic_piks"
-        android:title="wechat"/>
+        android:id="@+id/menu_weibo_item"
+        android:icon="@drawable/icon_logo_weibo_nor"
+        android:title="新浪微博" />
     <item
-        android:icon="@drawable/ic_piks"
-        android:title="wechat"/>
-    <item
-        android:icon="@drawable/ic_piks"
-        android:title="wechat"/>
+        android:id="@+id/menu_moments_item"
+        android:icon="@drawable/icon_logo_moments_nor"
+        android:title="朋友圈" />
 </menu>

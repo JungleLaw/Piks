@@ -3,9 +3,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/img_display_parent"
-    android:fitsSystemWindows="true"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
     <com.law.think.frame.widget.bottomsheet.BottomSheetLayout
         android:id="@+id/bottomsheet_layout"
@@ -106,7 +106,7 @@
                     android:paddingLeft="20dip"
                     android:paddingTop="5dip"
                     android:textColor="@color/white"
-                    android:textSize="20sp"/>
+                    android:textSize="18sp" />
             </LinearLayout>
         </RelativeLayout>
     </com.law.think.frame.widget.bottomsheet.BottomSheetLayout>

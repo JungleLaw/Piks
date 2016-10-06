@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -29,6 +28,9 @@ import com.law.piks.medias.entity.Media;
 import com.law.piks.medias.utils.ContentUtils;
 import com.law.piks.view.HackyViewPager;
 import com.law.piks.widget.bottomsheet.MenuSheetView;
+import com.law.piks.widget.bottomsheet.MenuSheetView.OnMenuItemClickListener;
+import com.law.piks.widget.popmenu.MenuItem;
+import com.law.piks.widget.popmenu.PopMenu;
 import com.law.think.frame.imageloader.ImageLoader;
 import com.law.think.frame.inject.annotation.ViewInject;
 import com.law.think.frame.inject.annotation.event.OnClick;
@@ -38,6 +40,7 @@ import com.law.think.frame.utils.PixelUtils;
 import com.law.think.frame.utils.SDKUtils;
 import com.law.think.frame.utils.ScreenUtils;
 import com.law.think.frame.utils.TimeUtils;
+import com.law.think.frame.widget.ThinkToast;
 import com.law.think.frame.widget.TitleBar;
 import com.law.think.frame.widget.bottomsheet.BottomSheetLayout;
 
@@ -83,11 +86,11 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     private TextView mDialogTitleText;
     private TextView mDialogContentText;
     private MenuSheetView menuSheetView;
-
     private AlertDialog mMediaInfoDialog;
     private ImageView mDeleteDialogImg;
     private TextView mDeleteDialogDetailText;
     private AlertDialog mDeleteDialog;
+    private PopMenu mPopMenu;
 
     private DisplayPagerAdapter mDisplayPagerAdapter;
     private boolean fullscreenmode = false;
@@ -131,6 +134,9 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
             getWindow().setStatusBarColor(Color.BLACK);
             getWindow().setNavigationBarColor(Color.BLACK);
         }
+        if (mPopMenu == null) {
+            initPopMenu();
+        }
     }
 
     @Override
@@ -138,12 +144,45 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         checkPhotoTitlebar.setOnLeftViewClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //                mBackgroundDisplay.startAnimation(exitAnimation);
-                //                mDisplayParent.startAnimation(exitAnimation);
                 finish();
             }
         });
+        checkPhotoTitlebar.setOnRightViewClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!mPopMenu.isShowing())
+                    mPopMenu.showAsDropDown(view, 0, 0);
+//                mPopupMenu.setAnchorView(view);
+//                mPopupMenu.show();
+            }
+        });
         mDisplayViewPager.addOnPageChangeListener(this);
+//        mPopupMenuListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+//
+//            }
+//        });
+        mPopMenu.setOnItemClick(new PopMenu.OnItemClick() {
+            @Override
+            public void onItemClick(int position) {
+                Logger.i("PopupMenuListView OnItemClick");
+                switch (position) {
+                    case 0:
+                        Logger.i(position);
+                        break;
+                    case 1:
+                        Logger.i(position);
+                        break;
+                    case 2:
+                        Logger.i(position);
+                        break;
+                    default:
+                }
+                if (mPopMenu.isShowing())
+                    mPopMenu.dismiss();
+            }
+        });
     }
 
     @Override
@@ -256,26 +295,23 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
                 break;
             case R.id.img_share:
                 shareMedia(index);
-//                if (menuSheetView == null) {
-//                    mBottomSheetLayout.setPeekOnDismiss(true);
-//                    menuSheetView = new MenuSheetView(GalleryActivity.this, MenuSheetView.MenuType.LIST, getString(R.string.share), new MenuSheetView.OnMenuItemClickListener() {
-//                        @Override
-//                        public boolean onMenuItemClick(MenuItem item) {
-//                            if (mBottomSheetLayout.isSheetShowing()) {
-//                                mBottomSheetLayout.dismissSheet();
-//                            }
-//                            return true;
-//                        }
-//                    });
-//                    menuSheetView.inflateMenu(R.menu.share_menu);
-//                }
-//                mBottomSheetLayout.showWithSheetView(menuSheetView);
+
                 break;
             case R.id.img_info:
                 Logger.i("info");
                 showMediaInfo(index);
                 break;
         }
+    }
+
+    private void initPopMenu() {
+        mPopMenu = new PopMenu(this);
+        List<MenuItem> items = new ArrayList<>();
+//            String[]{"编辑", "移动到", "重命名"};
+        items.add(new MenuItem("编辑"));
+        items.add(new MenuItem("移动到"));
+        items.add(new MenuItem("重命名"));
+        mPopMenu.setMenu(items);
     }
 
     private void initAnimation() {
@@ -400,11 +436,46 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     }
 
     private void shareMedia(int index) {
-        Media media = mMedias.get(index);
-        Intent share = new Intent(Intent.ACTION_SEND);
-        share.setType(media.getMimeType());
-        share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(media.getPath())));
-        startActivity(Intent.createChooser(share, "分享"));
+//        Media media = mMedias.get(index);
+//        Intent share = new Intent(Intent.ACTION_SEND);
+//        share.setType(media.getMimeType());
+//        share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(media.getPath())));
+//        startActivity(Intent.createChooser(share, "分享"));
+        if (menuSheetView == null) {
+            mBottomSheetLayout.setPeekOnDismiss(true);
+            menuSheetView = new MenuSheetView(GalleryActivity.this, MenuSheetView.MenuType.LIST, getString(R.string.share), new OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(android.view.MenuItem item) {
+                    if (mBottomSheetLayout.isSheetShowing()) {
+                        mBottomSheetLayout.dismissSheet();
+                    }
+                    switch (item.getItemId()) {
+                        case R.id.menu_wechat_item:
+                            ThinkToast.showToast(GalleryActivity.this, "Share Wechat", ThinkToast.LENGTH_SHORT, ThinkToast.SUCCESS);
+                            break;
+                        case R.id.menu_weibo_item:
+                            ThinkToast.showToast(GalleryActivity.this, "Share Weibo", ThinkToast.LENGTH_SHORT, ThinkToast.SUCCESS);
+                            break;
+                        case R.id.menu_moments_item:
+                            ThinkToast.showToast(GalleryActivity.this, "Share Moments", ThinkToast.LENGTH_SHORT, ThinkToast.SUCCESS);
+                            break;
+                        default:
+                    }
+                    return true;
+                }
+
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    if (mBottomSheetLayout.isSheetShowing()) {
+                        mBottomSheetLayout.dismissSheet();
+                    }
+                    return true;
+                }
+
+            });
+            menuSheetView.inflateMenu(R.menu.share_menu);
+        }
+        mBottomSheetLayout.showWithSheetView(menuSheetView);
     }
 
     private void showMediaInfo(int position) {

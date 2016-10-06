@@ -261,6 +261,8 @@ public class MenuSheetView extends FrameLayout {
      */
     public interface OnMenuItemClickListener {
         boolean onMenuItemClick(MenuItem item);
+
+        boolean onMenuItemClick(com.law.piks.widget.popmenu.MenuItem item);
     }
 
     private static class SheetMenuItem {
