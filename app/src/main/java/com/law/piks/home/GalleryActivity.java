@@ -277,11 +277,11 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         mPopMenu = new PopMenu(this);
         List<MenuItem> items = new ArrayList<>();
         //            String[]{"编辑", "移动到", "重命名"};
-        items.add(new MenuItem("滤镜"));
-        items.add(new MenuItem("裁剪"));
-        items.add(new MenuItem("移动"));
-        items.add(new MenuItem("重命名"));
-        items.add(new MenuItem("将照片设为"));
+        items.add(new MenuItem("滤镜", R.drawable.icon_popmenu_filter));
+        items.add(new MenuItem("裁剪", R.drawable.icon_popmenu_crop));
+        items.add(new MenuItem("移动", R.drawable.icon_popmenu_move));
+        items.add(new MenuItem("重命名", R.drawable.icon_popmenu_rename));
+        items.add(new MenuItem("将照片设为", R.drawable.icon_popmenu_setting));
         mPopMenu.setMenu(items);
     }
 

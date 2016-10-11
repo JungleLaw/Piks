@@ -1,0 +1,11 @@
+    开源意味着分享、交流，感谢以下所提及及未提及的开源项目和作者，此软件（不作商业之用）正是在他们的基础上开发完成的。如有冒犯到各位，请马上联系我JungleLaw@live.com，以便我做出修改。
+
+·PhotoView - https://github.com/chrisbanes
+·metadata-extractor - https://github.com/drewnoakes
+·Particle - https://github.com/JeasonWong
+·Calligraphy - https://github.com/chrisjenx
+·bottomsheet - https://github.com/Flipboard
+·SlideMenu - https://github.com/TangKe
+·glide - https://github.com/bumptech
+·android-GridViewWithHeaderAndFooter - https://github.com/liaohuqiu
+·Shimmer-android - https://github.com/RomainPiel

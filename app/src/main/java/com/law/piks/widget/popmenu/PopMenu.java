@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
@@ -40,7 +41,14 @@ public class PopMenu extends PopupWindow {
         if (mItems != null && mItems.size() > 0) {
             for (int i = 0, count = mItems.size(); i < count; i++) {
                 View itemView = LayoutInflater.from(mContext).inflate(R.layout.layout_list_popupmenu_item, null);
-                ((TextView) (itemView.findViewById(R.id.text_menu_item_name))).setText(mItems.get(i).getItemDisplay());
+                TextView itemText = (TextView) itemView.findViewById(R.id.text_menu_item_name);
+                ImageView itemImg = (ImageView) itemView.findViewById(R.id.img_menu_item);
+                itemText.setText(mItems.get(i).getItemDisplay());
+                if (mItems.get(i).getDrawableId() > 0) {
+                    itemImg.setImageResource(mItems.get(i).getDrawableId());
+                } else {
+                    itemImg.setVisibility(View.GONE);
+                }
                 itemView.setOnClickListener(new MenuItemClickListener(i));
                 mLinearLayoutMenu.addView(itemView);
                 if (i != count - 1) {
@@ -60,7 +68,14 @@ public class PopMenu extends PopupWindow {
         if (mItems != null && mItems.size() > 0) {
             for (int i = 0, count = mItems.size(); i < count; i++) {
                 View itemView = LayoutInflater.from(mContext).inflate(R.layout.layout_list_popupmenu_item, null);
-                ((TextView) (itemView.findViewById(R.id.text_menu_item_name))).setText(mItems.get(i).getItemDisplay());
+                TextView itemText = (TextView) itemView.findViewById(R.id.text_menu_item_name);
+                ImageView itemImg = (ImageView) itemView.findViewById(R.id.img_menu_item);
+                itemText.setText(mItems.get(i).getItemDisplay());
+                if (mItems.get(i).getDrawableId() > 0) {
+                    itemImg.setImageResource(mItems.get(i).getDrawableId());
+                } else {
+                    itemImg.setVisibility(View.GONE);
+                }
                 itemView.setOnClickListener(new MenuItemClickListener(i));
                 mLinearLayoutMenu.addView(itemView);
                 if (i != count - 1) {

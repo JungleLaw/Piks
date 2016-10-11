@@ -26,6 +26,8 @@ import com.law.think.frame.utils.AppUtils;
 import com.law.think.frame.utils.Logger;
 import com.law.think.frame.widget.ThinkToast;
 import com.law.think.frame.widget.TitleBar;
+import com.romainpiel.shimmer.Shimmer;
+import com.romainpiel.shimmer.ShimmerTextView;
 
 import org.w3c.dom.Text;
 
@@ -42,12 +44,16 @@ public class AboutActivity extends AppBaseActivity {
     private TitleBar mTitleBar;
     @ViewInject(R.id.img_new_version_flag)
     private ImageView mImgNewVersionFlag;
+    @ViewInject(R.id.shimmer_text_copyright)
+    private ShimmerTextView mShimmerTextCopyright;
 
     private AlertDialog mUpdateDialog;
     private TextView mTextUpdateInfo;
     private Button mBtnUpdate;
 
     private VersionInfo mVersionInfo;
+
+    private Shimmer mShimmer;
 
     @Override
     public int setContentViewLayout() {
@@ -83,14 +89,18 @@ public class AboutActivity extends AppBaseActivity {
         } else {
             mImgNewVersionFlag.setVisibility(View.INVISIBLE);
         }
+
+        mShimmer = new Shimmer();
+        mShimmer.setDuration(1000).setStartDelay(500).setDirection(Shimmer.ANIMATION_DIRECTION_LTR);
+        mShimmer.start(mShimmerTextCopyright);
     }
 
     @Override
     public void destroyTask() {
-
+        mShimmer.cancel();
     }
 
-    @OnClick({R.id.btn_check_for_update, R.id.btn_intro_page, R.id.btn_thx_for_opensource, R.id.btn_about_me})
+    @OnClick({R.id.btn_check_for_update, R.id.btn_intro_page, R.id.btn_appreciation, R.id.btn_about_me})
     private void startAboutMeActivity(View view) {
         switch (view.getId()) {
             case R.id.btn_check_for_update:
@@ -99,7 +109,8 @@ public class AboutActivity extends AppBaseActivity {
             case R.id.btn_intro_page:
                 IntroActivity.navigateToIntroActivity(this, true);
                 break;
-            case R.id.btn_thx_for_opensource:
+            case R.id.btn_appreciation:
+                startActivity(new Intent(this, AppreciationActivity.class));
                 break;
             case R.id.btn_about_me:
                 startActivity(new Intent(this, AboutMeActivity.class));

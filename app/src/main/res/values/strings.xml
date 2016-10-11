@@ -19,7 +19,7 @@
     <string name="about_author">关于作者</string>
     <string name="author">作者</string>
     <string name="check_introduce">查看欢迎页</string>
-    <string name="thx">感谢开源项目及资源支持</string>
+    <string name="thx">感谢开源项目及资源的支持</string>
     <string name="check_update">检查更新</string>
     <string name="copyright_display">Copyright © 2016 JungleLaw.\n All Right Reserved</string>
     <string name="update">更新</string>
@@ -36,6 +36,8 @@
     <string name="wechat">微信</string>
     <!-- about me -->
     <string name="entry_immediately">立即体验</string>
+    <!-- appreciation -->
+    <string name="appreciation">感谢</string>
     <!-- generation -->
     <string name="delete">删除</string>
     <string name="cancel">取消</string>

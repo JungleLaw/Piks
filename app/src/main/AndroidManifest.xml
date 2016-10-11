@@ -50,6 +50,11 @@
 
         </activity>
         <activity
+            android:name=".other.AppreciationActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity
             android:name=".home.GalleryActivity"
             android:screenOrientation="portrait">
 

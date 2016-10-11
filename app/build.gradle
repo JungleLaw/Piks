@@ -23,14 +23,15 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile files('libs/xmpcore-5.1.2.jar')
     compile files('libs/Bughd_android_sdk_v1.3.7.jar')
+    compile files('libs/libammsdk.jar')
+    compile project(':ThinkAndroid')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.1.1'
-    compile project(':ThinkAndroid')
     compile 'uk.co.chrisjenx:calligraphy:2.2.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.4'
     compile 'me.wangyuwei:ParticleView:1.0.3'
     compile 'com.android.support:cardview-v7:24.1.1'
     compile 'com.android.support:recyclerview-v7:24.1.1'
     compile 'com.yqritc:recyclerview-flexibledivider:1.4.0'
-    compile files('libs/libammsdk.jar')
+    compile 'com.romainpiel.shimmer:library:1.4.0'
 }

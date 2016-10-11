@@ -1,24 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/root_menu_item"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/selector_clickable_background"
-                android:clickable="true"
-                android:descendantFocusability="blocksDescendants"
-                android:focusable="true">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/root_menu_item"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@drawable/selector_clickable_background"
+              android:clickable="true"
+              android:descendantFocusability="blocksDescendants"
+              android:focusable="true"
+              android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/img_menu_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:padding="6dip"
+        android:scaleType="centerInside"/>
 
     <TextView
         android:id="@+id/text_menu_item_name"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
         android:ellipsize="end"
         android:ems="10"
-        android:gravity="center"
+        android:gravity="left|center_vertical"
         android:minHeight="40dip"
         android:padding="4dip"
         android:singleLine="true"
         android:textColor="@color/white_dark"
         android:textSize="16sp"/>
-</RelativeLayout>
+</LinearLayout>
