@@ -13,13 +13,17 @@
     <string name="media_path">路径 : %s</string>
     <string name="share">分享</string>
     <!-- secondary menu -->
+    <string name="recommened">推荐给你的朋友</string>
     <string name="about">关于</string>
+    <!-- about -->
     <string name="about_author">关于作者</string>
     <string name="author">作者</string>
     <string name="check_introduce">查看欢迎页</string>
     <string name="thx">感谢开源项目及资源支持</string>
     <string name="check_update">检查更新</string>
     <string name="copyright_display">Copyright © 2016 JungleLaw.\n All Right Reserved</string>
+    <string name="update">更新</string>
+    <string name="update_title">检测到新版本</string>
     <!-- about me -->
     <string name="location">坐标</string>
     <string name="location_display">深圳</string>

@@ -67,18 +67,37 @@
                     android:layout_height="1px"
                     android:background="@color/grey"/>
 
-                <Button
+                <LinearLayout
                     android:id="@+id/btn_check_for_update"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/selector_clickable_background"
-                    android:drawableLeft="@drawable/icon_menu_update"
-                    android:drawablePadding="10dip"
-                    android:gravity="left|center_vertical"
-                    android:padding="10dip"
-                    android:text="@string/check_update"
-                    android:textColor="@color/white_dark"
-                    android:textSize="18sp"/>
+                    android:clickable="true"
+                    android:descendantFocusability="blocksDescendants"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:clickable="false"
+                        android:drawableLeft="@drawable/icon_menu_update"
+                        android:drawablePadding="10dip"
+                        android:gravity="left|center_vertical"
+                        android:padding="10dip"
+                        android:text="@string/check_update"
+                        android:textColor="@color/white_dark"
+                        android:textSize="18sp"/>
+
+                    <ImageView
+                        android:id="@+id/img_new_version_flag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:paddingRight="10dip"
+                        android:src="@drawable/icon_new_version"/>
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"

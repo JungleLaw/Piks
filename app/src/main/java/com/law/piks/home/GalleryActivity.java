@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -22,13 +23,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.law.piks.R;
+import com.law.piks.app.Constants;
 import com.law.piks.app.base.AppBaseFragmentActivity;
 import com.law.piks.home.adapter.DisplayPagerAdapter;
+import com.law.piks.home.share.ShareSheetView;
 import com.law.piks.medias.entity.Media;
 import com.law.piks.medias.utils.ContentUtils;
 import com.law.piks.view.HackyViewPager;
-import com.law.piks.widget.bottomsheet.MenuSheetView;
-import com.law.piks.widget.bottomsheet.MenuSheetView.OnMenuItemClickListener;
 import com.law.piks.widget.popmenu.MenuItem;
 import com.law.piks.widget.popmenu.PopMenu;
 import com.law.think.frame.imageloader.ImageLoader;
@@ -40,9 +41,13 @@ import com.law.think.frame.utils.PixelUtils;
 import com.law.think.frame.utils.SDKUtils;
 import com.law.think.frame.utils.ScreenUtils;
 import com.law.think.frame.utils.TimeUtils;
-import com.law.think.frame.widget.ThinkToast;
 import com.law.think.frame.widget.TitleBar;
 import com.law.think.frame.widget.bottomsheet.BottomSheetLayout;
+import com.tencent.mm.sdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.sdk.modelmsg.WXImageObject;
+import com.tencent.mm.sdk.modelmsg.WXMediaMessage;
+import com.tencent.mm.sdk.openapi.IWXAPI;
+import com.tencent.mm.sdk.openapi.WXAPIFactory;
 
 import java.io.File;
 import java.text.DecimalFormat;
@@ -85,7 +90,7 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     private ImageButton mDialogCloseImgBtn;
     private TextView mDialogTitleText;
     private TextView mDialogContentText;
-    private MenuSheetView menuSheetView;
+    private ShareSheetView shareSheetView;
     private AlertDialog mMediaInfoDialog;
     private ImageView mDeleteDialogImg;
     private TextView mDeleteDialogDetailText;
@@ -101,6 +106,7 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     private int direction = Direction.NO_DIRECTION;
     private int lastItemIndex = -1;
     private boolean modified = false;
+    private IWXAPI api;
 
     public static int getStatusBarHeight(Resources r) {
         int resourceId = r.getIdentifier("status_bar_height", "dimen", "android");
@@ -126,6 +132,7 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     public void initVariables() {
         mMedias = (ArrayList<Media>) getIntent().getSerializableExtra(MEDIAS);
         index = getIntent().getIntExtra(INDEX, 0);
+        regToWx();
     }
 
     @Override
@@ -152,33 +159,13 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
             public void onClick(View view) {
                 if (!mPopMenu.isShowing())
                     mPopMenu.showAsDropDown(view, 0, 0);
-//                mPopupMenu.setAnchorView(view);
-//                mPopupMenu.show();
             }
         });
         mDisplayViewPager.addOnPageChangeListener(this);
-//        mPopupMenuListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-//
-//            }
-//        });
         mPopMenu.setOnItemClick(new PopMenu.OnItemClick() {
             @Override
             public void onItemClick(int position) {
-                Logger.i("PopupMenuListView OnItemClick");
-                switch (position) {
-                    case 0:
-                        Logger.i(position);
-                        break;
-                    case 1:
-                        Logger.i(position);
-                        break;
-                    case 2:
-                        Logger.i(position);
-                        break;
-                    default:
-                }
+                Logger.i(position + " clicked");
                 if (mPopMenu.isShowing())
                     mPopMenu.dismiss();
             }
@@ -188,22 +175,6 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     @Override
     public void loadData(@Nullable Bundle savedInstanceState) {
         checkPhotoTitlebar.setTitleViewText("");
-        //        mDisplayAdapter = new DisplayPagerAdapter(mMedias);
-        //        mDisplayAdapter.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
-        //            @Override
-        //            public void onViewTap(View view, float x, float y) {
-        //                Logger.i("PhotoView onClicked!");
-        //                toggleUI();
-        //            }
-        //        });
-        //        mDisplayAdapter.setOnClickListener(new View.OnClickListener() {
-        //            @Override
-        //            public void onClick(View v) {
-        //                toggleUI();
-        //            }
-        //        });
-        //        mDisplayViewPager.setAdapter(mDisplayAdapter);
-        //        //        mDisplayViewPager.setPageTransformer(true, new CardSlideTransformer());
 
         mDisplayPagerAdapter = new DisplayPagerAdapter(getSupportFragmentManager(), mMedias);
         mDisplayViewPager.setAdapter(mDisplayPagerAdapter);
@@ -221,7 +192,6 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         //        mDisplayAdapter = null;
         mMedias.clear();
     }
-
 
     @Override
     public void finish() {
@@ -290,12 +260,11 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
                 break;
             case R.id.img_delete:
                 Logger.i("delete");
-//                deleteMedia(index);
+                //                deleteMedia(index);
                 showDeleteMediaDialog(index);
                 break;
             case R.id.img_share:
-                shareMedia(index);
-
+                shareMedia();
                 break;
             case R.id.img_info:
                 Logger.i("info");
@@ -307,10 +276,12 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     private void initPopMenu() {
         mPopMenu = new PopMenu(this);
         List<MenuItem> items = new ArrayList<>();
-//            String[]{"编辑", "移动到", "重命名"};
-        items.add(new MenuItem("编辑"));
-        items.add(new MenuItem("移动到"));
+        //            String[]{"编辑", "移动到", "重命名"};
+        items.add(new MenuItem("滤镜"));
+        items.add(new MenuItem("裁剪"));
+        items.add(new MenuItem("移动"));
         items.add(new MenuItem("重命名"));
+        items.add(new MenuItem("将照片设为"));
         mPopMenu.setMenu(items);
     }
 
@@ -377,7 +348,7 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
             dialogView.findViewById(R.id.btn_del).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-//                    deleteMedia(index);
+                    //                    deleteMedia(index);
                     modified = true;
                     switch (direction) {
                         case Direction.LEFT:
@@ -406,7 +377,7 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
             mDeleteDialog.show();
         }
         ImageLoader.with(this).centerCrop().signature(mMedias.get(index).signature()).load(mMedias.get(index).getPath()).placeholder(R.color.black).into(mDeleteDialogImg);
-//        mDeleteDialogImg.setImageURI(Uri.fromFile(new File(mMedias.get(index).getPath())));
+        //        mDeleteDialogImg.setImageURI(Uri.fromFile(new File(mMedias.get(index).getPath())));
         mDeleteDialogDetailText.setText(getMediaDetail(mMedias.get(index)));
     }
 
@@ -435,47 +406,39 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         return success;
     }
 
-    private void shareMedia(int index) {
-//        Media media = mMedias.get(index);
-//        Intent share = new Intent(Intent.ACTION_SEND);
-//        share.setType(media.getMimeType());
-//        share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(media.getPath())));
-//        startActivity(Intent.createChooser(share, "分享"));
-        if (menuSheetView == null) {
+    private void shareMedia() {
+        if (shareSheetView == null) {
             mBottomSheetLayout.setPeekOnDismiss(true);
-            menuSheetView = new MenuSheetView(GalleryActivity.this, MenuSheetView.MenuType.LIST, getString(R.string.share), new OnMenuItemClickListener() {
+            shareSheetView = new ShareSheetView(this, "分享", new ShareSheetView.OnShareItemClickListener() {
                 @Override
-                public boolean onMenuItemClick(android.view.MenuItem item) {
+                public void onShareItemClick(ShareSheetView.ShareItem item) {
                     if (mBottomSheetLayout.isSheetShowing()) {
                         mBottomSheetLayout.dismissSheet();
                     }
-                    switch (item.getItemId()) {
-                        case R.id.menu_wechat_item:
-                            ThinkToast.showToast(GalleryActivity.this, "Share Wechat", ThinkToast.LENGTH_SHORT, ThinkToast.SUCCESS);
+                    switch (item.getItemShareType()) {
+                        case ShareSheetView.ShareType.WECHAT:
+                            shareToWx(SendMessageToWX.Req.WXSceneSession);
                             break;
-                        case R.id.menu_weibo_item:
-                            ThinkToast.showToast(GalleryActivity.this, "Share Weibo", ThinkToast.LENGTH_SHORT, ThinkToast.SUCCESS);
+                        case ShareSheetView.ShareType.MOMENTS:
+                            shareToWx(SendMessageToWX.Req.WXSceneTimeline);
                             break;
-                        case R.id.menu_moments_item:
-                            ThinkToast.showToast(GalleryActivity.this, "Share Moments", ThinkToast.LENGTH_SHORT, ThinkToast.SUCCESS);
+                        case ShareSheetView.ShareType.WXFAVORITE:
+                            shareToWx(SendMessageToWX.Req.WXSceneFavorite);
+                            break;
+                        case ShareSheetView.ShareType.WEIBO:
+                            break;
+                        case ShareSheetView.ShareType.EMAIL:
+                            shareToMail();
+                            break;
+                        case ShareSheetView.ShareType.SMS:
+                            shareToSMS();
                             break;
                         default:
                     }
-                    return true;
                 }
-
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    if (mBottomSheetLayout.isSheetShowing()) {
-                        mBottomSheetLayout.dismissSheet();
-                    }
-                    return true;
-                }
-
             });
-            menuSheetView.inflateMenu(R.menu.share_menu);
         }
-        mBottomSheetLayout.showWithSheetView(menuSheetView);
+        mBottomSheetLayout.showWithSheetView(shareSheetView);
     }
 
     private void showMediaInfo(int position) {
@@ -565,6 +528,59 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
 
     public void scanFile(Context context, String[] path, MediaScannerConnection.OnScanCompletedListener onScanCompletedListener) {
         MediaScannerConnection.scanFile(context, path, null, onScanCompletedListener);
+    }
+
+    private void regToWx() {
+        api = WXAPIFactory.createWXAPI(this, Constants.SHARE.WX.APP_ID, true);
+        api.registerApp(Constants.SHARE.WX.APP_ID);
+    }
+
+    private void shareToWx(int scene) {
+        WXImageObject imageObject = new WXImageObject();
+        imageObject.imagePath = mMedias.get(mDisplayViewPager.getCurrentItem()).getPath();
+        WXMediaMessage msg = new WXMediaMessage();
+        msg.mediaObject = imageObject;
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+        req.transaction = String.valueOf(System.currentTimeMillis());
+        req.message = msg;
+        req.scene = scene;
+        api.sendReq(req);
+    }
+
+    //发邮件
+    private void shareToMail() {
+        Media media = mMedias.get(mDisplayViewPager.getCurrentItem());
+        Intent email = new Intent(android.content.Intent.ACTION_SEND);
+        email.setType("image/*");
+        String emailSubject = "共享软件";
+        File file = new File(media.getPath());
+        Uri outputFileUri = Uri.fromFile(file);
+        email.putExtra(Intent.EXTRA_STREAM, outputFileUri);
+        //设置邮件默认地址
+        // email.putExtra(android.content.Intent.EXTRA_EMAIL, emailReciver);
+        //设置邮件默认标题
+        email.putExtra(android.content.Intent.EXTRA_SUBJECT, emailSubject);
+        //设置要默认发送的内容
+        //        email.putExtra(android.content.Intent.EXTRA_TEXT, emailBody);
+        //调用系统的邮件系统
+        startActivity(Intent.createChooser(email, "请选择邮件发送软件"));
+    }
+
+    //发短信
+    private void shareToSMS() {
+        Media media = mMedias.get(mDisplayViewPager.getCurrentItem());
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        // intent.setType("text/plain"); //纯文本
+        // 图片分享
+        //        String type = "image/" + media.getMimeType();
+        shareIntent.setType("image/*");
+        // 添加图片
+        File f = new File(media.getPath());
+        Uri u = Uri.fromFile(f);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, u); //添加图片
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "分享");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, "I would like to share this with you...");
+        startActivity(Intent.createChooser(shareIntent, "来自Piks"));
     }
 
     private class Direction {

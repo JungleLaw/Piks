@@ -24,12 +24,28 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
+
+
+            <Button
+                android:id="@+id/btn_recommened"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:drawableLeft="@drawable/icon_menu_recommened"
+                android:drawablePadding="10dip"
+                android:gravity="left|center_vertical"
+                android:padding="10dip"
+                android:text="@string/recommened"
+                android:textColor="@color/white_dark"
+                android:textSize="18sp"/>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1px"
                 android:layout_marginLeft="10dip"
                 android:layout_marginRight="10dip"
                 android:background="@color/grey"/>
+
             <Button
                 android:id="@+id/btn_about"
                 android:layout_width="match_parent"

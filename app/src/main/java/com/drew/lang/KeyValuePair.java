@@ -22,31 +22,29 @@ package com.drew.lang;
 
 import com.drew.lang.annotations.NotNull;
 
+import java.io.Serializable;
+
 /**
  * Models a key/value pair, where both are non-null {@link String} objects.
  *
  * @author Drew Noakes https://drewnoakes.com
  */
-public class KeyValuePair
-{
+public class KeyValuePair implements Serializable {
     private final String _key;
     private final String _value;
 
-    public KeyValuePair(@NotNull String key, @NotNull String value)
-    {
+    public KeyValuePair(@NotNull String key, @NotNull String value) {
         _key = key;
         _value = value;
     }
 
     @NotNull
-    public String getKey()
-    {
+    public String getKey() {
         return _key;
     }
 
     @NotNull
-    public String getValue()
-    {
+    public String getValue() {
         return _value;
     }
 }
