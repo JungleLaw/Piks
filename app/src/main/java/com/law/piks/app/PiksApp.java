@@ -4,15 +4,13 @@ import android.app.Application;
 
 import com.alibaba.fastjson.JSON;
 import com.law.piks.medias.Configuration;
-import com.law.piks.medias.engine.MediasLoadEngine;
-import com.law.piks.other.AboutActivity;
-import com.law.piks.other.update.VersionInfo;
+import com.law.piks.others.update.VersionInfo;
 import com.law.think.frame.app.ThinkAndroid;
 import com.law.think.frame.confs.AppConf;
 import com.law.think.frame.prefs.AnyPref;
 import com.law.think.frame.utils.AppUtils;
 import com.law.think.frame.utils.Logger;
-import com.law.think.frame.widget.ThinkToast;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import im.fir.sdk.FIR;
 import im.fir.sdk.VersionCheckCallback;
@@ -36,6 +34,7 @@ public class PiksApp extends ThinkAndroid {
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath("fonts/San_Francisco_Display_Thin.ttf").setFontAttrId(uk.co.chrisjenx.calligraphy.R.attr.fontPath).build());
         Configuration.initGalleryConstants(this);
         FIR.init(this);
+        CrashReport.initCrashReport(getApplicationContext(), "900056786", false);
         checkForUpdate();
     }
 

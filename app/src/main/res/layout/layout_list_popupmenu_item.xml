@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:id="@+id/root_menu_item"
               android:layout_width="match_parent"
-              android:layout_height="wrap_content"
+              android:layout_height="match_parent"
               android:background="@drawable/selector_clickable_background"
               android:clickable="true"
               android:descendantFocusability="blocksDescendants"
@@ -20,7 +20,8 @@
     <TextView
         android:id="@+id/text_menu_item_name"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
         android:ellipsize="end"
         android:ems="10"
         android:gravity="left|center_vertical"

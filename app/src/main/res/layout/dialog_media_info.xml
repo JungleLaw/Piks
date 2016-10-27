@@ -18,7 +18,7 @@
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:drawableLeft="@drawable/icon_folder"
-            android:drawablePadding="5dip"
+            android:drawablePadding="6dip"
             android:textColor="@color/white"
             android:textSize="20sp" />
 

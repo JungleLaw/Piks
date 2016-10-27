@@ -27,7 +27,6 @@ import java.util.ArrayList;
  * See {@link GridViewWithHeaderAndFooter#addFooterView(View, Object, boolean)}
  */
 public class GridViewWithHeaderAndFooter extends GridView {
-
     //log tag can be at most 23 characters
     private static final String LOG_TAG = "GridViewHeaderAndFooter";
     public static boolean DEBUG = false;
@@ -40,6 +39,7 @@ public class GridViewWithHeaderAndFooter extends GridView {
     private ArrayList<FixedViewInfo> mFooterViewInfos = new ArrayList<FixedViewInfo>();
     private ListAdapter mOriginalAdapter;
     private ItemClickHandler mItemClickHandler;
+    private DistanceComputer distanceComputer;
 
     public GridViewWithHeaderAndFooter(Context context) {
         super(context);
@@ -54,6 +54,22 @@ public class GridViewWithHeaderAndFooter extends GridView {
     public GridViewWithHeaderAndFooter(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         initHeaderGridView();
+    }
+
+    /* ADD THIS */
+    @Override
+    public int computeVerticalScrollOffset() {
+        return super.computeVerticalScrollOffset();
+    }
+
+    public void setDistanceComputer(DistanceComputer distanceComputer) {
+        this.distanceComputer = distanceComputer;
+    }
+
+    @Override
+    public void computeScroll() {
+        if (distanceComputer != null)
+            distanceComputer.compute(computeVerticalScrollOffset());
     }
 
     private void initHeaderGridView() {
@@ -418,6 +434,10 @@ public class GridViewWithHeaderAndFooter extends GridView {
             mItemClickHandler = new ItemClickHandler();
         }
         return mItemClickHandler;
+    }
+
+    public interface DistanceComputer {
+        void compute(int distance);
     }
 
     /**

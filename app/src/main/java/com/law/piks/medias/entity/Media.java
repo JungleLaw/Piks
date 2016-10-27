@@ -30,12 +30,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
+
+import io.realm.RealmObject;
+import io.realm.annotations.Ignore;
 
 /**
  * Created by Law on 2016/9/9.
  */
-public class Media implements Parcelable, Serializable {
+public class Media extends RealmObject implements Parcelable, Serializable {
     public static final String UNKNOWN_MIME = "unknown";
 
     @SuppressWarnings("unused")
@@ -50,10 +52,12 @@ public class Media implements Parcelable, Serializable {
             return new Media[size];
         }
     };
-    private Map<String, Object> metadatas = new HashMap<>();
+    @Ignore
+    private HashMap<String, Object> metadatas = new HashMap<>();
     private long id;
     private String name;
     private String path;
+    @Ignore
     private Uri uri;
     private long modifiedDate = -1;
     private String mime;
@@ -62,7 +66,7 @@ public class Media implements Parcelable, Serializable {
     private int height;
 
     protected Media(Parcel in) {
-        metadatas = in.readHashMap(Map.class.getClassLoader());
+        metadatas = in.readHashMap(HashMap.class.getClassLoader());
         id = in.readLong();
         name = in.readString();
         path = in.readString();
@@ -71,10 +75,6 @@ public class Media implements Parcelable, Serializable {
         size = in.readLong();
         width = in.readInt();
         height = in.readInt();
-    }
-
-    public String getMimeType() {
-        return MediaUtils.getMimeType(path);
     }
 
     public Media() {
@@ -96,6 +96,10 @@ public class Media implements Parcelable, Serializable {
     public Media(String path) {
         this.path = path;
         setMIME();
+    }
+
+    public String getMimeType() {
+        return MediaUtils.getMimeType(path);
     }
 
     @Override
@@ -418,7 +422,7 @@ public class Media implements Parcelable, Serializable {
         return EncryptUtils.encryptMD5ToString(getPath() + "_" + getDateModified());
     }
 
-    public Map<String, Object> getMetadatas() {
+    public HashMap<String, Object> getMetadatas() {
         return metadatas;
     }
 

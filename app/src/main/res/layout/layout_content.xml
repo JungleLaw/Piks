@@ -12,18 +12,18 @@
     <!--android:layout_height="match_parent"-->
     <!--android:orientation="vertical">-->
     <!--<android.support.v7.widget.RecyclerView-->
-        <!--android:id="@+id/recycler_view_medias"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:overScrollMode="never"/>-->
+    <!--android:id="@+id/recycler_view_medias"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:overScrollMode="never"/>-->
 
     <!--<com.law.piks.widget.recyclerviewfastscroll.FastScroller-->
-        <!--android:id="@+id/fast_scroller"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:orientation="vertical"/>-->
+    <!--android:id="@+id/fast_scroller"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_alignParentEnd="true"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:orientation="vertical"/>-->
 
     <com.law.think.frame.view.GridViewWithHeaderAndFooter
         android:id="@+id/gridview_medias"
@@ -31,6 +31,8 @@
         android:layout_height="match_parent"
         android:overScrollMode="never"/>
     <!--</LinearLayout>-->
+
+
     <com.law.think.frame.widget.TitleBar
         android:id="@+id/titlebar"
         android:layout_width="match_parent"
@@ -40,5 +42,6 @@
         app:leftDrawableID="@drawable/icon_menu"
         app:rightDrawableID="@drawable/icon_more_hor"
         app:titleTextSize="20sp"/>
+
     <!--app:titleText="Piks"-->
 </RelativeLayout>

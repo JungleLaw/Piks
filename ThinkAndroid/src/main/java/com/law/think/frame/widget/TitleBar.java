@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView.ScaleType;
 import android.widget.RelativeLayout;
@@ -214,4 +215,7 @@ public class TitleBar extends RelativeLayout {
         mTitleView.setBackground(drawable);
     }
 
+    public View getTitleView() {
+        return mTitleView;
+    }
 }

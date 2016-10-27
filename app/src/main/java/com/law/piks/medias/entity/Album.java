@@ -34,7 +34,7 @@ public class Album implements Serializable, Parcelable {
         name = in.readString();
         path = in.readString();
         storageRootPath = in.readString();
-        medias = in.readArrayList(List.class.getClassLoader());
+        medias = in.readArrayList(Media.class.getClassLoader());
         count = in.readInt();
     }
 
@@ -107,6 +107,7 @@ public class Album implements Serializable, Parcelable {
                 ", path='" + path + '\'' +
                 ", storageRootPath='" + storageRootPath + '\'' +
                 ", medias=" + medias +
+                ", medias[0]=" + medias.get(0).toString() +
                 ", count=" + count +
                 '}';
     }

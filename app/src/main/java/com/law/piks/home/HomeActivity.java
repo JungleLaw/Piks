@@ -1,25 +1,35 @@
 package com.law.piks.home;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.flaviofaria.kenburnsview.KenBurnsView;
 import com.law.piks.R;
 import com.law.piks.app.base.AppBaseActivity;
+import com.law.piks.browse.GalleryActivity;
+import com.law.piks.browse.bottomsheet.ShareSheetView;
 import com.law.piks.home.adapter.AlbumAdapter;
 import com.law.piks.home.adapter.MediaAdapter;
-import com.law.piks.home.share.ShareSheetView;
 import com.law.piks.medias.Configuration;
 import com.law.piks.medias.engine.MediasLoader;
 import com.law.piks.medias.entity.Album;
 import com.law.piks.medias.entity.Media;
-import com.law.piks.other.AboutActivity;
+import com.law.piks.others.AboutActivity;
 import com.law.piks.widget.peekandpop.PeekAndPop;
 import com.law.piks.widget.slidemenu.SlideMenu;
 import com.law.think.frame.imageloader.ImageLoader;
@@ -30,12 +40,14 @@ import com.law.think.frame.view.GridViewWithHeaderAndFooter;
 import com.law.think.frame.widget.ThinkToast;
 import com.law.think.frame.widget.TitleBar;
 import com.law.think.frame.widget.bottomsheet.BottomSheetLayout;
-import com.tencent.mm.sdk.modelmsg.SendMessageToWX;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import eightbitlab.com.blurview.BlurView;
+import eightbitlab.com.blurview.RenderScriptBlur;
 
 /**
  * Created by Law on 2016/9/7.
@@ -54,6 +66,7 @@ public class HomeActivity extends AppBaseActivity {
 
 
     private ImageView mAlbumCover;
+    private BlurView mBlurView;
     private boolean isExit;
     private View mMediasCoverHeaderView;
     private GridViewWithHeaderAndFooter mGridViewWithHeaderAndFooter;
@@ -62,11 +75,14 @@ public class HomeActivity extends AppBaseActivity {
     private ShareSheetView shareSheetView;
 
     private int headerHeight;
-    private List<Album> mAlbums;
+    private ArrayList<Album> mAlbums;
     private ArrayList<Media> mMedias;
     private AlbumAdapter mAlbumAdapter;
     private MediaAdapter mMediaAdapter;
 
+    private int count = 0;
+
+    private ColorDrawable mTilteBackgroundDrawable;
 
     @Override
     public int setContentViewLayout() {
@@ -91,6 +107,7 @@ public class HomeActivity extends AppBaseActivity {
         headerHeight = width * 2 / 3;
         mMediasCoverHeaderView = getLayoutInflater().inflate(R.layout.layout_medias_cover_header, null, false);
         mMediasCoverHeaderView.setLayoutParams(new ViewGroup.LayoutParams(width, headerHeight));
+        mBlurView = (BlurView) mMediasCoverHeaderView.findViewById(R.id.blurView);
         mAlbumFolder = (ImageView) mMediasCoverHeaderView.findViewById(R.id.img_album_folder);
         mAlbumCover = (ImageView) mMediasCoverHeaderView.findViewById(R.id.img_medias_cover);
         mAlbumName = (TextView) mMediasCoverHeaderView.findViewById(R.id.text_album_name);
@@ -98,6 +115,7 @@ public class HomeActivity extends AppBaseActivity {
 
         mPeekAndPop = new PeekAndPop.Builder(this).blurBackground(true).peekLayout(R.layout.layout_home_peek_and_pop).parentViewGroupToDisallowTouchEvents(mGridViewWithHeaderAndFooter).build();
 
+        settingAlbumCoverBlur();
     }
 
     @Override
@@ -119,7 +137,21 @@ public class HomeActivity extends AppBaseActivity {
             @Override
             public void onClick(View v) {
                 // TODO Auto-generated method stub
-                Logger.i("titlebar right onclick");
+                //                CrashReport.testJavaCrash();
+
+                PendingIntent pendingIntent = PendingIntent.getActivity(HomeActivity.this, 11, new Intent(HomeActivity.this, AboutActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(HomeActivity.this);
+                builder.setContentTitle("提醒").setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_LIGHTS)
+                        //要显示通知栏通知,这个一定要设置
+                        .setSmallIcon(R.drawable.ic_piks_108)
+                        //2.3 一定要设置这个参数,负责会报错
+                        //                        .setContentIntent(pendingIntent)
+                        .setFullScreenIntent(pendingIntent, false).setContentText("你有新的消息");
+                Notification headsUp = builder.build();
+                //                headsUp.setCode(1);
+                //                manage.notify(headsUp);
+                NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                notificationManager.notify(count++, headsUp);
             }
         });
         mAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -161,13 +193,34 @@ public class HomeActivity extends AppBaseActivity {
                 sharePiks();
             }
         });
+        mGridViewWithHeaderAndFooter.setDistanceComputer(new GridViewWithHeaderAndFooter.DistanceComputer() {
+            @Override
+            public void compute(int distance) {
+                Logger.i("distance = " + distance);
+                if (mTilteBackgroundDrawable == null) {
+                    mTilteBackgroundDrawable = new ColorDrawable();
+                    mTilteBackgroundDrawable.setColor(ContextCompat.getColor(HomeActivity.this, R.color.primary));
+                    mTitleBar.setBackground(mTilteBackgroundDrawable);
+                }
+                if (distance < 0) {
+                    mTilteBackgroundDrawable.setAlpha(0);
+                    mTitleBar.getTitleView().setAlpha(0.0f);
+                } else if (distance >= 0 && distance < 100) {
+                    mTilteBackgroundDrawable.setAlpha((int) (distance * 2.25f));
+                    mTitleBar.getTitleView().setAlpha(distance / 100.0f);
+                } else if (distance >= 100) {
+                    mTilteBackgroundDrawable.setAlpha(225);
+                    mTitleBar.getTitleView().setAlpha(1.0f);
+                }
+            }
+        });
     }
 
     @Override
     public void loadData(@Nullable Bundle savedInstanceState) {
         mAlbumAdapter = new AlbumAdapter(this, mAlbums);
         mAlbumsListView.setAdapter(mAlbumAdapter);
-        mTitleBar.setTitleViewText("");
+        mTitleBar.getTitleView().setAlpha(0);
 
         mMediaAdapter = new MediaAdapter(this, mMedias, mPeekAndPop);
         mMediaAdapter.setOnClickCallback(new MediaAdapter.OnClickCallback() {
@@ -225,6 +278,19 @@ public class HomeActivity extends AppBaseActivity {
 
     }
 
+    private void settingAlbumCoverBlur() {
+        final float radius = 5;
+
+        final View decorView = getWindow().getDecorView();
+        //Activity's root View. Can also be root View of your layout
+        final View rootView = decorView.findViewById(android.R.id.content);
+        //set background, if your root layout doesn't have one
+        final Drawable windowBackground = mAlbumCover.getBackground();
+
+        mBlurView.setupWith(mAlbumCover).windowBackground(windowBackground).blurAlgorithm(new RenderScriptBlur(this, true)) //Optional, enabled by default. User can have custom implementation
+                .blurRadius(radius);
+    }
+
     private void loadMedia(final int albumIndex) {
         Logger.i("loadMedia " + albumIndex);
         showProgress();
@@ -252,6 +318,7 @@ public class HomeActivity extends AppBaseActivity {
         Album album = mAlbums.get(position);
         mAlbumSize.setText(getString(R.string.album_size, String.valueOf(album.getCount())));
         mAlbumName.setText(album.getName());
+        mTitleBar.setTitleViewText(album.getName());
         if (album.getName().toLowerCase().equals("all")) {
             mAlbumFolder.setImageResource(R.drawable.ic_cover_all);
         } else if (album.getName().toLowerCase().equals("camera")) {
@@ -292,35 +359,36 @@ public class HomeActivity extends AppBaseActivity {
             mBottomSheetLayout.setPeekOnDismiss(true);
             shareSheetView = new ShareSheetView(this, "分享", new ShareSheetView.OnShareItemClickListener() {
                 @Override
-                public void onShareItemClick(ShareSheetView.ShareItem item) {
+                public void onItemClick(ShareSheetView.ShareItem item) {
                     if (mBottomSheetLayout.isSheetShowing()) {
                         mBottomSheetLayout.dismissSheet();
                     }
                     switch (item.getItemShareType()) {
-                        case ShareSheetView.ShareType.WECHAT:
+                        case ShareSheetView.ShareItem.ShareType.WECHAT:
                             //                            shareToWx(SendMessageToWX.Req.WXSceneSession);
                             Logger.i("WECHAT");
                             break;
-                        case ShareSheetView.ShareType.MOMENTS:
+                        case ShareSheetView.ShareItem.ShareType.MOMENTS:
                             //                            shareToWx(SendMessageToWX.Req.WXSceneTimeline);
                             Logger.i("MOMENTS");
                             break;
-                        case ShareSheetView.ShareType.WXFAVORITE:
+                        case ShareSheetView.ShareItem.ShareType.WXFAVORITE:
                             //                            shareToWx(SendMessageToWX.Req.WXSceneFavorite);
                             Logger.i("WXFAVORITE");
                             break;
-                        case ShareSheetView.ShareType.WEIBO:
+                        case ShareSheetView.ShareItem.ShareType.WEIBO:
                             Logger.i("WEIBO");
                             break;
-                        case ShareSheetView.ShareType.EMAIL:
+                        case ShareSheetView.ShareItem.ShareType.EMAIL:
                             Logger.i("EMAIL");
                             break;
-                        case ShareSheetView.ShareType.SMS:
+                        case ShareSheetView.ShareItem.ShareType.SMS:
                             Logger.i("SMS");
                             break;
                         default:
                     }
                 }
+
             });
         }
         mBottomSheetLayout.showWithSheetView(shareSheetView);

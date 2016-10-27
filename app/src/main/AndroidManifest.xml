@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+
     <!-- 可选 -->
     <uses-permission android:name="android.permission.GET_TASKS"/>
 
@@ -14,6 +16,11 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <!-- 从SDCard读取数据权限 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- 设置壁纸 -->
+    <uses-permission android:name="android.permission.SET_WALLPAPER"/>
+    <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
 
     <application
         android:name=".app.PiksApp"
@@ -35,7 +42,7 @@
 
         </activity>
         <activity
-            android:name=".other.AboutActivity"
+            android:name=".others.AboutActivity"
             android:screenOrientation="portrait">
 
         </activity>
@@ -45,17 +52,27 @@
 
         </activity>
         <activity
-            android:name=".other.AboutMeActivity"
+            android:name=".others.AboutMeActivity"
             android:screenOrientation="portrait">
 
         </activity>
         <activity
-            android:name=".other.AppreciationActivity"
+            android:name=".others.AppreciationActivity"
             android:screenOrientation="portrait">
 
         </activity>
         <activity
-            android:name=".home.GalleryActivity"
+            android:name=".browse.GalleryActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity
+            android:name=".edit.FilterActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+        <activity
+            android:name=".edit.CropActivity"
             android:screenOrientation="portrait">
 
         </activity>
@@ -77,7 +94,10 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar">
 
         </activity>
-
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <!-- Glide 定制 -->
         <meta-data
             android:name="com.law.piks.app.CustomGlideModule"

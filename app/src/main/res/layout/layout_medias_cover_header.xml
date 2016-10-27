@@ -1,13 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
+
+    <!--<ImageView-->
+    <!--android:id="@+id/img_medias_cover"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:scaleType="centerCrop"/>-->
+
 
     <ImageView
         android:id="@+id/img_medias_cover"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"/>
+        android:layout_height="match_parent"/>
+
+    <eightbitlab.com.blurview.BlurView
+        android:id="@+id/blurView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:blurOverlayColor="@color/colorOverlay">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </eightbitlab.com.blurview.BlurView>
 
     <LinearLayout
         android:layout_width="wrap_content"

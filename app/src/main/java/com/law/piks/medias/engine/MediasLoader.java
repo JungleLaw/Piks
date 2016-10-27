@@ -68,6 +68,10 @@ public class MediasLoader {
         return albumList;
     }
 
+    private void getFavorites() {
+
+    }
+
     private List<String> getAlbumNames() {
         List<String> mAlbumNames = new ArrayList<>();
         for (int i = 0, size = MediasLoader.PHOTO_URI.length; i < size; i++) {
