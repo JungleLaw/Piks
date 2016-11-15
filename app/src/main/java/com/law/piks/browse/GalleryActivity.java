@@ -12,6 +12,7 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
@@ -35,6 +36,9 @@ import com.law.piks.browse.bottomsheet.MoveSheetView;
 import com.law.piks.browse.bottomsheet.SettingSheetView;
 import com.law.piks.browse.bottomsheet.ShareSheetView;
 import com.law.piks.edit.FilterActivity;
+import com.law.piks.medias.engine.CollectionsEngine;
+import com.law.piks.medias.engine.MediasLoader;
+import com.law.piks.medias.entity.Album;
 import com.law.piks.medias.entity.Media;
 import com.law.piks.medias.utils.ContentUtils;
 import com.law.piks.view.HackyViewPager;
@@ -72,6 +76,13 @@ import java.util.List;
 
 public class GalleryActivity extends AppBaseFragmentActivity implements ViewPager.OnPageChangeListener {
     public static final int GALLERY_REQUEST_CODE = 0X0001;
+    public static final int UCROP_REQUEST_CODE = 0X0002;
+    public static final int FILTER_REQUEST_CODE = 0X0003;
+
+    public static final String RESULT_KEY = "result_key";
+    public static final String RESULT_COLLECT = "collect";
+    public static final String RESULT_MODIFY = "modify";
+
     private static final String MEDIAS = "medias";
     private static final String INDEX = "index";
     private static AlphaAnimation entryAnimation = new AlphaAnimation(0, 1);
@@ -121,8 +132,10 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     private int direction = Direction.NO_DIRECTION;
     private int lastItemIndex = -1;
     private boolean modified = false;
+    //    private boolean collected = false;
     private IWXAPI api;
     private EditText mEditRename;
+    private String cropFilePath;
 
     public static int getStatusBarHeight(Resources r) {
         int resourceId = r.getIdentifier("status_bar_height", "dimen", "android");
@@ -195,18 +208,13 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
                         //                        startActivity(new Intent(GalleryActivity.this, FilterActivity.class));
                         Media media = mMedias.get(mDisplayViewPager.getCurrentItem());
                         if (media.getOrientation() == 90 || media.getOrientation() == 270) {
-                            FilterActivity.navigateToFilterActivity(GalleryActivity.this, media.getPath(), media.getHeight(), media.getWidth());
+                            FilterActivity.navigateToFilterActivity(GalleryActivity.this, media.getPath(), media.getHeight(), media.getWidth(), FILTER_REQUEST_CODE);
                         } else {
-                            FilterActivity.navigateToFilterActivity(GalleryActivity.this, media.getPath(), media.getWidth(), media.getHeight());
+                            FilterActivity.navigateToFilterActivity(GalleryActivity.this, media.getPath(), media.getWidth(), media.getHeight(), FILTER_REQUEST_CODE);
                         }
                         break;
                     case 1:
-                        //                        startActivity(new Intent(GalleryActivity.this, CropActivity.class));
-                        Uri mDestinationUri = Uri.fromFile(new File(getCacheDir(), "croppedImage.png"));
-                        Uri uri = Uri.fromFile(new File(mMedias.get(mDisplayViewPager.getCurrentItem()).getPath()));
-                        UCrop uCrop = UCrop.of(uri, mDestinationUri);
-                        uCrop.withOptions(getUcropOptions());
-                        uCrop.start(GalleryActivity.this);
+                        startUCrop(GalleryActivity.this, mMedias.get(mDisplayViewPager.getCurrentItem()).getPath(), UCROP_REQUEST_CODE);
                         break;
                     case 2:
                         showMoveSheet();
@@ -252,8 +260,12 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         mDisplayViewPager.setOffscreenPageLimit(2);
         checkPhotoTitlebar.setTitleViewText(getString(R.string.media_title, index + 1, mMedias.size()));
         mTextModifiedDate.setText(TimeUtils.milliseconds2String(mMedias.get(index).getModifiedDate() * ConstUtils.SEC, new SimpleDateFormat("yyyy年MM月dd日 a HH:mm")));
+        if (mMedias.get(index).isCollected()) {
+            mCollectImg.setSelected(true);
+        } else {
+            mCollectImg.setSelected(false);
+        }
         mDisplayViewPager.setCurrentItem(index, false);
-
     }
 
     @Override
@@ -265,6 +277,12 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     @Override
     public void finish() {
         if (modified) {
+            //            if (collected) {
+            //                setResult(RESULT_OK, new Intent().putExtra(RESULT_KEY, RESULT_COLLECT));
+            //            }
+            //            if (modified) {
+            //                setResult(RESULT_OK, new Intent().putExtra(RESULT_KEY, RESULT_MODIFY));
+            //            }
             setResult(RESULT_OK);
         }
         super.finish();
@@ -273,9 +291,40 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
     @Override
     public void onBackPressed() {
         if (modified) {
+            //            if (collected) {
+            //                setResult(RESULT_OK, new Intent().putExtra(RESULT_KEY, RESULT_COLLECT));
+            //            }
+            //            if (modified) {
+            //                setResult(RESULT_OK, new Intent().putExtra(RESULT_KEY, RESULT_MODIFY));
+            //            }
             setResult(RESULT_OK);
         }
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK)
+            return;
+        switch (requestCode) {
+            case UCROP_REQUEST_CODE:
+                modified = true;
+                final Uri resultUri = UCrop.getOutput(data);
+                //                String path = new File(resultUri.toString()).getAbsolutePath().substring(new File(resultUri.toString()).getAbsolutePath().indexOf(":"), new File(resultUri.toString()).getAbsolutePath().length());
+                //                Logger.i("TAG", "resultUri.toString()).getAbsolutePath() = " + new File(resultUri.toString()).getAbsolutePath());
+                //                Logger.i("TAG", "resultUri.toString()).getAbsoluteFile() = " + new File(resultUri.toString()).getAbsoluteFile());
+                //                Logger.i("TAG", "resultUri.toString() = " + resultUri.toString());
+
+                scanFile(GalleryActivity.this, new String[]{cropFilePath});
+                //                scanFile(GalleryActivity.this, new String[]{path});
+                cropFilePath = null;
+                break;
+            case FILTER_REQUEST_CODE:
+                modified = true;
+                break;
+            default:
+        }
     }
 
     @Override
@@ -308,6 +357,12 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         lastItemIndex = position;
         checkPhotoTitlebar.setTitleViewText(getString(R.string.media_title, position + 1, mMedias.size()));
         mTextModifiedDate.setText(TimeUtils.milliseconds2String(mMedias.get(position).getModifiedDate() * ConstUtils.SEC, new SimpleDateFormat("yyyy年MM月dd日 a HH:mm")));
+        Logger.i("Selected = " + mMedias.get(position).isCollected());
+        if (mMedias.get(position).isCollected()) {
+            mCollectImg.setSelected(true);
+        } else {
+            mCollectImg.setSelected(false);
+        }
     }
 
     @Override
@@ -320,11 +375,24 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         switch (view.getId()) {
             case R.id.img_collect:
                 Logger.i("collect");
+                //                if (!mCollectImg.isSelected()) {
+                //                    mCollectImg.setSelected(true);
+                //                } else {
+                //                    mCollectImg.setSelected(false);
+                //                }
                 if (!mCollectImg.isSelected()) {
+                    mMedias.get(index).setCollected(true);
+                    CollectionsEngine.addCollect(mMedias.get(index));
                     mCollectImg.setSelected(true);
+                    Logger.i("mMedias.get(" + index + ").isCollected() = " + mMedias.get(index).isCollected());
                 } else {
+                    mMedias.get(index).setCollected(false);
+                    CollectionsEngine.removeCollect(mMedias.get(index));
                     mCollectImg.setSelected(false);
+                    Logger.i("mMedias.get(" + index + ").isCollected() = " + mMedias.get(index).isCollected());
                 }
+                //                collected = true;
+                modified = true;
                 break;
             case R.id.img_delete:
                 Logger.i("delete");
@@ -433,9 +501,9 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
                         default:
                             Logger.i("Direction.NO_DIRECTION");
                     }
-                    deleteMedia(mDisplayViewPager.getCurrentItem(), direction);
                     if (mDeleteDialog.isShowing())
                         mDeleteDialog.dismiss();
+                    deleteMedia(mDisplayViewPager.getCurrentItem(), direction);
                 }
             });
             dialogView.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
@@ -473,9 +541,13 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
                 Logger.i("Direction.NO_DIRECTION");
         }
         mMedias.remove(index);
-        mDisplayPagerAdapter.notifyDataSetChanged();
-        checkPhotoTitlebar.setTitleViewText(getString(R.string.media_title, mDisplayViewPager.getCurrentItem() + 1, mMedias.size()));
-        mTextModifiedDate.setText(TimeUtils.milliseconds2String(mMedias.get(mDisplayViewPager.getCurrentItem()).getModifiedDate() * ConstUtils.SEC, new SimpleDateFormat("yyyy年MM月dd日 a HH:mm")));
+        if (mMedias.size() == 0) {
+            finish();
+        } else {
+            mDisplayPagerAdapter.notifyDataSetChanged();
+            checkPhotoTitlebar.setTitleViewText(getString(R.string.media_title, mDisplayViewPager.getCurrentItem() + 1, mMedias.size()));
+            mTextModifiedDate.setText(TimeUtils.milliseconds2String(mMedias.get(mDisplayViewPager.getCurrentItem()).getModifiedDate() * ConstUtils.SEC, new SimpleDateFormat("yyyy年MM月dd日 a HH:mm")));
+        }
         return success;
     }
 
@@ -666,7 +738,13 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
             renameDialogView.findViewById(R.id.btn_rename).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ThinkToast.showToast(GalleryActivity.this, "Rename suc", ThinkToast.LENGTH_SHORT, ThinkToast.SUCCESS);
+                    if (renameCurrentMedia(GalleryActivity.this, mEditRename.getText().toString().trim())) {
+                        //                        ThinkToast.showToast(GalleryActivity.this, getString(R.string.rename_suc), ThinkToast.LENGTH_SHORT, ThinkToast.SUCCESS);
+                    } else {
+                        ThinkToast.showToast(GalleryActivity.this, getString(R.string.rename_fail), ThinkToast.LENGTH_SHORT, ThinkToast.ERROR);
+                    }
+                    if (mRenameDialog.isShowing())
+                        mRenameDialog.dismiss();
                 }
             });
             renameDialogView.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
@@ -678,22 +756,89 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
             });
         }
         mEditRename.setText("");
-        mEditRename.setHint(mMedias.get(mDisplayViewPager.getCurrentItem()).getName());
+        mEditRename.setHint(mMedias.get(mDisplayViewPager.getCurrentItem()).getName().substring(0, mMedias.get(mDisplayViewPager.getCurrentItem()).getName().lastIndexOf('.')));
         if (!mRenameDialog.isShowing())
             mRenameDialog.show();
+    }
+
+    public boolean renameCurrentMedia(Context context, String newName) {
+        Media currentMedia = mMedias.get(mDisplayViewPager.getCurrentItem());
+        boolean success = false;
+        try {
+            File from = new File(currentMedia.getPath());
+            File to = new File(getPhotoPathRenamed(currentMedia.getPath(), newName));
+            if (success = ContentUtils.moveFile(context, from, to)) {
+                Logger.i("TAG", "from = " + from.getAbsolutePath() + ", to = " + to.getAbsolutePath());
+                scanFile(context, new String[]{to.getAbsolutePath(), from.getAbsolutePath()});
+                currentMedia.setPath(to.getAbsolutePath());
+                modified = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return success;
+    }
+
+    public String getPhotoPathRenamed(String olderPath, String newName) {
+        String c = "", b[] = olderPath.split("/");
+        for (int x = 0; x < b.length - 1; x++)
+            c += b[x] + "/";
+        c += newName;
+        String name = b[b.length - 1];
+        c += name.substring(name.lastIndexOf('.'));
+        return c;
     }
 
     //移动
     private void showMoveSheet() {
         if (mMoveSheetView == null) {
-            mMoveSheetView = new MoveSheetView(this, "移动到", new MoveSheetView.OnMoveItemClickListener() {
+            List<MoveSheetView.MoveItem> items = new ArrayList<>();
+            List<Album> albumList = MediasLoader.getInstance().getAlbumsSimple();
+            for (Album album : albumList) {
+                MoveSheetView.MoveItem item = new MoveSheetView.MoveItem(album.getAlbumCover().getPath(), album.getName(), album.getStorageRootPath(), album.getCount());
+                items.add(item);
+            }
+            mMoveSheetView = new MoveSheetView(this, "移动到", items, new MoveSheetView.OnMoveItemClickListener() {
                 @Override
                 public void onItemClick(MoveSheetView.MoveItem item) {
-
+                    Logger.i("TAG", item.getStorageRootPath());
+                    if (moveCurrentPhoto(GalleryActivity.this, item.getStorageRootPath())) {
+                        //                        ThinkToast.showToast(GalleryActivity.this, getString(R.string.move_suc), ThinkToast.LENGTH_SHORT, ThinkToast.SUCCESS);
+                    } else {
+                        ThinkToast.showToast(GalleryActivity.this, getString(R.string.move_fail), ThinkToast.LENGTH_SHORT, ThinkToast.ERROR);
+                    }
+                    if (mBottomSheetLayout.isSheetShowing()) {
+                        mBottomSheetLayout.dismissSheet();
+                    }
                 }
             });
         }
         mBottomSheetLayout.showWithSheetView(mMoveSheetView);
+    }
+
+    public boolean moveCurrentPhoto(Context context, String path) {
+        Media currentMedia = mMedias.get(mDisplayViewPager.getCurrentItem());
+        boolean success = false;
+        try {
+            File from = new File(currentMedia.getPath());
+            File to = new File(getPhotoPathMoved(currentMedia.getPath(), path));
+            if (success = ContentUtils.moveFile(context, from, to)) {
+                scanFile(context, new String[]{to.getAbsolutePath(), from.getAbsolutePath()});
+                currentMedia.setPath(to.getAbsolutePath());
+                modified = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return success;
+    }
+
+    public String getPhotoPathMoved(String olderPath, String folderPath) {
+        String b[] = olderPath.split("/");
+        String fi = b[b.length - 1];
+        String path = folderPath + "/";
+        path += fi;
+        return path;
     }
 
     //设置为
@@ -709,6 +854,38 @@ public class GalleryActivity extends AppBaseFragmentActivity implements ViewPage
         //        }
         //        mBottomSheetLayout.showWithSheetView(mSettingSheetView);
         new SetWallpaperTask(mDisplayViewPager.getCurrentItem()).execute();
+    }
+
+    /**
+     * 启动裁剪
+     *
+     * @param activity       上下文
+     * @param sourceFilePath 需要裁剪图片的绝对路径
+     * @param requestCode    比如：UCrop.REQUEST_CROP
+     * @return
+     */
+    private void startUCrop(Activity activity, String sourceFilePath, int requestCode) {
+        Uri sourceUri = Uri.fromFile(new File(sourceFilePath));
+        //        File outDir = Environment.getExternalStorageDirectory();
+        File outDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        if (!outDir.exists()) {
+            outDir.mkdirs();
+        }
+        File outFile = new File(outDir, System.currentTimeMillis() + ".jpg");
+        cropFilePath = outFile.getAbsolutePath();
+        //        Logger.i("TAG", "outFile.getAbsolutePath() = " + outFile.getAbsolutePath());
+        //        Logger.i("TAG", "cropFilePath = " + cropFilePath);
+        //        Logger.i("TAG", "outFile.getParent() = " + outFile.getParent());
+        //        Logger.i("TAG", "outFile.getAbsoluteFile() = " + outFile.getAbsoluteFile());
+        //裁剪后图片的绝对路径
+        //        String cameraScalePath = outFile.getAbsolutePath();
+        Uri destinationUri = Uri.fromFile(outFile);
+        //初始化，第一个参数：需要裁剪的图片；第二个参数：裁剪后图片
+        UCrop uCrop = UCrop.of(sourceUri, destinationUri);
+        //UCrop配置
+        uCrop.withOptions(getUcropOptions());
+        //跳转裁剪页面
+        uCrop.start(activity, requestCode);
     }
 
     private UCrop.Options getUcropOptions() {

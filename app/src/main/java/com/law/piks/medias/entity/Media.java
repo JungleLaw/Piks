@@ -33,6 +33,7 @@ import java.util.Locale;
 
 import io.realm.RealmObject;
 import io.realm.annotations.Ignore;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by Law on 2016/9/9.
@@ -54,6 +55,7 @@ public class Media extends RealmObject implements Parcelable, Serializable {
     };
     @Ignore
     private HashMap<String, Object> metadatas = new HashMap<>();
+    @PrimaryKey
     private long id;
     private String name;
     private String path;
@@ -64,6 +66,7 @@ public class Media extends RealmObject implements Parcelable, Serializable {
     private long size;
     private int width;
     private int height;
+    private boolean collected = false;
 
     protected Media(Parcel in) {
         metadatas = in.readHashMap(HashMap.class.getClassLoader());
@@ -75,6 +78,11 @@ public class Media extends RealmObject implements Parcelable, Serializable {
         size = in.readLong();
         width = in.readInt();
         height = in.readInt();
+        if (in.readInt() == 0) {
+            collected = false;
+        } else {
+            collected = true;
+        }
     }
 
     public Media() {
@@ -113,6 +121,11 @@ public class Media extends RealmObject implements Parcelable, Serializable {
         dest.writeLong(size);
         dest.writeInt(width);
         dest.writeInt(height);
+        if (collected) {
+            dest.writeInt(1);
+        } else {
+            dest.writeInt(0);
+        }
     }
 
     private void setMIME() {
@@ -450,6 +463,18 @@ public class Media extends RealmObject implements Parcelable, Serializable {
         this.mime = mime;
     }
 
+    public boolean isCollected() {
+        return collected;
+    }
+
+    public void setCollected(boolean collected) {
+        this.collected = collected;
+    }
+
+    private String getStorageRootPath() {
+        return getPath().substring(0, getPath().lastIndexOf("/") + 1);
+    }
+
     @Override
     public String toString() {
         return "Media{" +
@@ -461,8 +486,9 @@ public class Media extends RealmObject implements Parcelable, Serializable {
                 ", modifiedDate=" + modifiedDate +
                 ", mime='" + mime + '\'' +
                 ", size=" + size +
-                ", width=" + getWidth() +
-                ", height=" + getHeight() +
+                ", width=" + width +
+                ", height=" + height +
+                ", collected=" + collected +
                 '}';
     }
 }

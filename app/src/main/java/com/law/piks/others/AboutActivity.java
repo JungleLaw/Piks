@@ -1,18 +1,25 @@
 package com.law.piks.others;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.law.piks.R;
 import com.law.piks.app.Constants;
 import com.law.piks.app.base.AppBaseActivity;
+import com.law.piks.others.update.UpdateService;
 import com.law.piks.others.update.VersionInfo;
 import com.law.piks.splash.IntroActivity;
 import com.law.think.frame.inject.annotation.ViewInject;
@@ -24,6 +31,8 @@ import com.law.think.frame.widget.ThinkToast;
 import com.law.think.frame.widget.TitleBar;
 import com.romainpiel.shimmer.Shimmer;
 import com.romainpiel.shimmer.ShimmerTextView;
+
+import java.io.File;
 
 import im.fir.sdk.FIR;
 import im.fir.sdk.VersionCheckCallback;
@@ -48,6 +57,10 @@ public class AboutActivity extends AppBaseActivity {
     private VersionInfo mVersionInfo;
 
     private Shimmer mShimmer;
+
+    private DownloadReceiver mReceiver;
+    private int mDownloadStatus = -1;
+    private String mNewVersionFilePath;
 
     @Override
     public int setContentViewLayout() {
@@ -90,6 +103,18 @@ public class AboutActivity extends AppBaseActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        register();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregister();
+    }
+
+    @Override
     public void destroyTask() {
         mShimmer.cancel();
     }
@@ -98,7 +123,22 @@ public class AboutActivity extends AppBaseActivity {
     private void startAboutMeActivity(View view) {
         switch (view.getId()) {
             case R.id.btn_check_for_update:
-                checkForUpdate();
+                switch (mDownloadStatus) {
+                    case -1:
+                        checkForUpdate();
+                        break;
+                    case UpdateService.DOWNLOAD_GOING:
+                        ThinkToast.showToast(this, "正在下载新版本", ThinkToast.LENGTH_LONG, ThinkToast.INFO);
+                        break;
+                    case UpdateService.DOWNLOAD_ERROR:
+                        ThinkToast.showToast(this, "下载新版本出现错误", ThinkToast.LENGTH_LONG, ThinkToast.INFO);
+                        mDownloadStatus = -1;
+                        break;
+                    case UpdateService.DOWNLOAD_COMPELET:
+                        //                        ThinkToast.showToast(this, "新版本下载完成", ThinkToast.LENGTH_LONG, ThinkToast.INFO);
+                        AppUtils.installApp(this, new File(mNewVersionFilePath));
+                        break;
+                }
                 break;
             case R.id.btn_intro_page:
                 IntroActivity.navigateToIntroActivity(this, true);
@@ -179,9 +219,38 @@ public class AboutActivity extends AppBaseActivity {
                 if (mUpdateDialog.isShowing())
                     mUpdateDialog.dismiss();
                 Logger.i(mVersionInfo.getInstallUrl());
+                UpdateService.startDownload(AboutActivity.this, mVersionInfo.getInstallUrl(), mVersionInfo.getVersionName());
             }
         });
         if (!mUpdateDialog.isShowing())
             mUpdateDialog.show();
+    }
+
+    private void register() {
+        mReceiver = new DownloadReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(UpdateService.DOWNLOAD_BROADCAST);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, filter);
+    }
+
+    private void unregister() {
+        if (mReceiver != null) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+        }
+    }
+
+    class DownloadReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (TextUtils.isEmpty(action) || !action.equals(UpdateService.DOWNLOAD_BROADCAST)) {
+                return;
+            }
+            mDownloadStatus = intent.getIntExtra(UpdateService.DOWNLOAD_STATUS, -1);
+            if (mDownloadStatus == UpdateService.DOWNLOAD_COMPELET) {
+                mNewVersionFilePath = intent.getStringExtra(UpdateService.DOWNLOAD_NEW_VERSION_FILE);
+            }
+            Logger.i("mDownloadStatus = " + mDownloadStatus);
+        }
     }
 }

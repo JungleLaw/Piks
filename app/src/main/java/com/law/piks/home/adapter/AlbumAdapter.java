@@ -71,6 +71,8 @@ public class AlbumAdapter extends BaseAdapter {
         }
         if (mAlbum.getName().toLowerCase().equals("all")) {
             mHolder.mDisplayIconImage.setImageResource(R.drawable.ic_folder_all);
+        } else if (mAlbum.getName().toLowerCase().equals("collects")) {
+            mHolder.mDisplayIconImage.setImageResource(R.drawable.ic_folder_fave);
         } else if (mAlbum.getName().toLowerCase().equals("camera")) {
             mHolder.mDisplayIconImage.setImageResource(R.drawable.ic_folder_camera);
         } else if (mAlbum.getName().toLowerCase().equals("screenshots")) {
@@ -80,13 +82,16 @@ public class AlbumAdapter extends BaseAdapter {
         } else {
             mHolder.mDisplayIconImage.setImageResource(R.drawable.ic_folder_album);
         }
-        if (mAlbum.getAlbumCover() != null)
+        if (mAlbum != null && mAlbum.getAlbumCover() != null)
             ImageLoader.with(mContext).signature(mAlbum.getAlbumCover().signature()).centerCrop().load(mAlbum.getAlbumCover().getPath()).into(mHolder.mAlbumCoverImage);
         return convertView;
     }
 
     public void refresh(List<Album> albumList) {
         this.albums = albumList;
+        if (selectIndex >= albums.size()) {
+            selectIndex = 0;
+        }
         notifyDataSetChanged();
     }
 

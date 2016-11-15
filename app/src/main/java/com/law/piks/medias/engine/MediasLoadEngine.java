@@ -23,6 +23,7 @@ public class MediasLoadEngine {
     private File root;
 
     private ArrayList<Media> mAllMedias;
+    private List<Media> mCollectedMediass;
     private List<Album> mAlbums;
 
     private MediasLoadEngine() {

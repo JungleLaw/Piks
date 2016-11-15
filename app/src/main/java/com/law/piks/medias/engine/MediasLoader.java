@@ -30,6 +30,7 @@ public class MediasLoader {
     private static MediasLoader instance = new MediasLoader();
     private Context mContext;
     private List<Album> albumList;
+    private List<Long> collectsIds;
 
     private MediasLoader() {
     }
@@ -45,6 +46,8 @@ public class MediasLoader {
 
     private List<Album> load() {
         albumList = new ArrayList<>();
+        collectsIds = new ArrayList<>();
+        collectsIds.addAll(CollectionsEngine.getCollectsIds());
         List<String> mAlbumNames = getAlbumNames();
         for (String name : mAlbumNames) {
             Album album = getMediasByAlbumName(name);
@@ -65,6 +68,9 @@ public class MediasLoader {
         albumList.add(0, album);
         AlbumsComparators albumsComparators = new AlbumsComparators(false);
         Collections.sort(albumList, albumsComparators.getSizeComparator());
+        //        if (CollectionsEngine.getCollects() != null && CollectionsEngine.getCollects().getMedias().size() > 0) {
+        //            albumList.add(CollectionsEngine.getCollects());
+        //        }
         return albumList;
     }
 
@@ -86,6 +92,24 @@ public class MediasLoader {
             mAlbumCursor = null;
         }
         return mAlbumNames;
+    }
+
+    public List<Album> getAlbumsSimple() {
+        List<Album> mAlbums = new ArrayList<>();
+        for (Album album : albumList) {
+            if (album.getName().equalsIgnoreCase("All") || album.getName().equalsIgnoreCase("Collects"))
+                continue;
+            Album albumSimple = new Album();
+            albumSimple.setName(album.getName());
+            albumSimple.setPath(album.getPath());
+            albumSimple.setCount(album.getCount());
+            albumSimple.setStorageRootPath(album.getStorageRootPath());
+            List<Media> medias = new ArrayList<>();
+            medias.add(album.getAlbumCover());
+            albumSimple.setMedias(medias);
+            mAlbums.add(album);
+        }
+        return mAlbums;
     }
 
     private Album getMediasByAlbumName(String albumName) {
@@ -110,12 +134,19 @@ public class MediasLoader {
                 if (TextUtils.isEmpty(mMedia.getPath()) || TextUtils.isEmpty(mMedia.getName()) || "null".equals(mMedia.getName()) || mMedia.getMIME().equals(Media.UNKNOWN_MIME) || !new File(mMedia.getPath()).exists()) {
                     continue;
                 }
+                if (collectsIds.contains(mMedia.getId())) {
+                    mMedia.setCollected(true);
+                }
                 mAlbum.getMedias().add(mMedia);
             } while (mPhotosCursor.moveToNext());
             mPhotosCursor.close();
             mPhotosCursor = null;
         }
         mAlbum.setCount(mAlbum.getMedias().size());
+        if (mAlbum.getAlbumCover() != null && !TextUtils.isEmpty(mAlbum.getAlbumCover().getPath())) {
+            mAlbum.setStorageRootPath(mAlbum.getAlbumCover().getPath().substring(0, mAlbum.getAlbumCover().getPath().lastIndexOf("/") + 1));
+        }
+        //        Logger.i(mAlbum.getAlbumCover().getPath().substring(0,mAlbum.getAlbumCover().getPath().lastIndexOf("/")));
         return mAlbum;
     }
 

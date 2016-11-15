@@ -1,15 +1,19 @@
 package com.law.piks.edit;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.MediaScannerConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.RelativeLayout;
 
@@ -27,6 +31,9 @@ import com.law.think.frame.utils.Logger;
 import com.law.think.frame.utils.PixelUtils;
 import com.law.think.frame.widget.TitleBar;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,12 +74,12 @@ public class FilterActivity extends AppBaseActivity implements Handler.Callback 
 
     private FilterAdapter mAdapter;
 
-    public static void navigateToFilterActivity(Context context, String path, int width, int height) {
+    public static void navigateToFilterActivity(Context context, String path, int width, int height, int requestCode) {
         Intent mIntent = new Intent(context, FilterActivity.class);
         mIntent.putExtra(FILE_PATH, path);
         mIntent.putExtra(WIDTH, width);
         mIntent.putExtra(HEIGHT, height);
-        context.startActivity(mIntent);
+        ((Activity) context).startActivityForResult(mIntent, requestCode);
     }
 
     @Override
@@ -120,6 +127,14 @@ public class FilterActivity extends AppBaseActivity implements Handler.Callback 
         mTitleBar.setOnLeftViewClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                finish();
+            }
+        });
+        mTitleBar.setOnRightViewClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveBitmap();
+                setResult(RESULT_OK);
                 finish();
             }
         });
@@ -180,5 +195,34 @@ public class FilterActivity extends AppBaseActivity implements Handler.Callback 
                 break;
         }
         return true;
+    }
+
+    private void saveBitmap() {
+        BufferedOutputStream bos = null;
+        try {
+            File outDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            if (!outDir.exists()) {
+                outDir.mkdirs();
+            }
+            File outFile = new File(outDir, System.currentTimeMillis() + ".jpg");
+
+            String tmpFilePath = outFile.getAbsolutePath();
+            File tmpFile = new File(tmpFilePath);
+            Bitmap bitmap = mGPUImageView.capture();
+            bos = new BufferedOutputStream(new FileOutputStream(tmpFilePath));
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            bitmap.recycle();
+            MediaScannerConnection.scanFile(this, new String[]{tmpFilePath}, null, null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (Exception e2) {
+                }
+            }
+        }
     }
 }

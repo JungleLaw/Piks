@@ -1,6 +1,7 @@
 package com.law.piks.app;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.alibaba.fastjson.JSON;
 import com.law.piks.medias.Configuration;
@@ -10,10 +11,12 @@ import com.law.think.frame.confs.AppConf;
 import com.law.think.frame.prefs.AnyPref;
 import com.law.think.frame.utils.AppUtils;
 import com.law.think.frame.utils.Logger;
+import com.liulishuo.filedownloader.FileDownloader;
 import com.tencent.bugly.crashreport.CrashReport;
 
 import im.fir.sdk.FIR;
 import im.fir.sdk.VersionCheckCallback;
+import io.realm.Realm;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 /**
@@ -31,11 +34,19 @@ public class PiksApp extends ThinkAndroid {
         super.onCreate();
         AppConf.Config.setDebug(true);
         mInstance = this;
+        initRealm(this);
+        FileDownloader.init(getApplicationContext());
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder().setDefaultFontPath("fonts/San_Francisco_Display_Thin.ttf").setFontAttrId(uk.co.chrisjenx.calligraphy.R.attr.fontPath).build());
         Configuration.initGalleryConstants(this);
         FIR.init(this);
         CrashReport.initCrashReport(getApplicationContext(), "900056786", false);
         checkForUpdate();
+    }
+
+    private void initRealm(Context context) {
+        //        RealmConfiguration configuration = new RealmConfiguration.Builder(this).build();
+        //        Realm.setDefaultConfiguration(configuration);
+        Realm.init(context);
     }
 
     private void checkForUpdate() {

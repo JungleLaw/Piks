@@ -4,6 +4,8 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -16,16 +18,19 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import com.flaviofaria.kenburnsview.KenBurnsView;
 import com.law.piks.R;
+import com.law.piks.app.Constants;
 import com.law.piks.app.base.AppBaseActivity;
 import com.law.piks.browse.GalleryActivity;
 import com.law.piks.browse.bottomsheet.ShareSheetView;
 import com.law.piks.home.adapter.AlbumAdapter;
 import com.law.piks.home.adapter.MediaAdapter;
 import com.law.piks.medias.Configuration;
+import com.law.piks.medias.engine.CollectionsEngine;
 import com.law.piks.medias.engine.MediasLoader;
 import com.law.piks.medias.entity.Album;
 import com.law.piks.medias.entity.Media;
@@ -34,12 +39,20 @@ import com.law.piks.widget.peekandpop.PeekAndPop;
 import com.law.piks.widget.slidemenu.SlideMenu;
 import com.law.think.frame.imageloader.ImageLoader;
 import com.law.think.frame.inject.annotation.ViewInject;
+import com.law.think.frame.utils.BitmapUtils;
 import com.law.think.frame.utils.Logger;
 import com.law.think.frame.utils.ScreenUtils;
 import com.law.think.frame.view.GridViewWithHeaderAndFooter;
 import com.law.think.frame.widget.ThinkToast;
 import com.law.think.frame.widget.TitleBar;
 import com.law.think.frame.widget.bottomsheet.BottomSheetLayout;
+import com.tencent.mm.sdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.sdk.modelmsg.WXImageObject;
+import com.tencent.mm.sdk.modelmsg.WXMediaMessage;
+import com.tencent.mm.sdk.modelmsg.WXTextObject;
+import com.tencent.mm.sdk.modelmsg.WXWebpageObject;
+import com.tencent.mm.sdk.openapi.IWXAPI;
+import com.tencent.mm.sdk.openapi.WXAPIFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +96,7 @@ public class HomeActivity extends AppBaseActivity {
     private int count = 0;
 
     private ColorDrawable mTilteBackgroundDrawable;
+    private IWXAPI api;
 
     @Override
     public int setContentViewLayout() {
@@ -91,7 +105,7 @@ public class HomeActivity extends AppBaseActivity {
 
     @Override
     public void initVariables() {
-
+        regToWx();
     }
 
     @Override
@@ -138,20 +152,11 @@ public class HomeActivity extends AppBaseActivity {
             public void onClick(View v) {
                 // TODO Auto-generated method stub
                 //                CrashReport.testJavaCrash();
-
-                PendingIntent pendingIntent = PendingIntent.getActivity(HomeActivity.this, 11, new Intent(HomeActivity.this, AboutActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(HomeActivity.this);
-                builder.setContentTitle("提醒").setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_LIGHTS)
-                        //要显示通知栏通知,这个一定要设置
-                        .setSmallIcon(R.drawable.ic_piks_108)
-                        //2.3 一定要设置这个参数,负责会报错
-                        //                        .setContentIntent(pendingIntent)
-                        .setFullScreenIntent(pendingIntent, false).setContentText("你有新的消息");
-                Notification headsUp = builder.build();
-                //                headsUp.setCode(1);
-                //                manage.notify(headsUp);
-                NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                notificationManager.notify(count++, headsUp);
+                if (mSlideMenu.isOpen()) {
+                    mSlideMenu.close(true);
+                } else {
+                    mSlideMenu.open(true, true);
+                }
             }
         });
         mAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -196,7 +201,6 @@ public class HomeActivity extends AppBaseActivity {
         mGridViewWithHeaderAndFooter.setDistanceComputer(new GridViewWithHeaderAndFooter.DistanceComputer() {
             @Override
             public void compute(int distance) {
-                Logger.i("distance = " + distance);
                 if (mTilteBackgroundDrawable == null) {
                     mTilteBackgroundDrawable = new ColorDrawable();
                     mTilteBackgroundDrawable.setColor(ContextCompat.getColor(HomeActivity.this, R.color.primary));
@@ -273,7 +277,26 @@ public class HomeActivity extends AppBaseActivity {
             return;
         if (requestCode == GalleryActivity.GALLERY_REQUEST_CODE) {
             Logger.i("onActivityResult");
+            //            if (data.getStringExtra(GalleryActivity.RESULT_KEY).equals(GalleryActivity.RESULT_COLLECT)) {
+            ////                if (mAlbums.get(mAlbums.size() - 1).getName().equalsIgnoreCase("collects")) {
+            ////                    mAlbums.remove(mAlbums.size() - 1);
+            ////                }
+            ////                if (CollectionsEngine.getCollects() != null && CollectionsEngine.getCollects().getMedias().size() > 0) {
+            ////                    mAlbums.add(CollectionsEngine.getCollects());
+            ////                    mAlbumAdapter.refresh(mAlbums);
+            ////                    if (mAlbums.get(mAlbumAdapter.getSelectIndex()).getName().equalsIgnoreCase("collects")) {
+            ////                        updateHeaderView(mAlbumAdapter.getSelectIndex());
+            ////                        mMedias = new ArrayList<>();
+            ////                        mMedias.addAll(mAlbums.get(mAlbumAdapter.getSelectIndex()).getMedias());
+            ////                        mMediaAdapter.refresh(mMedias);
+            ////                    }
+            ////                } else {
+            ////                    loadMedia(mAlbumAdapter.getSelectIndex());
+            ////                }
+            //                loadMedia(mAlbumAdapter.getSelectIndex());
+            //            } else if (data.getStringExtra(GalleryActivity.RESULT_KEY).equals(GalleryActivity.RESULT_MODIFY)) {
             loadMedia(mAlbumAdapter.getSelectIndex());
+            //            }
         }
 
     }
@@ -292,18 +315,24 @@ public class HomeActivity extends AppBaseActivity {
     }
 
     private void loadMedia(final int albumIndex) {
-        Logger.i("loadMedia " + albumIndex);
         showProgress();
         MediasLoader.getInstance().loadPhotos(this, new MediasLoader.PhotosLoadHandler() {
             @Override
             public void getPhotosSuc(List<Album> albums) {
+                int index = albumIndex;
                 mAlbums = new ArrayList<>();
                 mAlbums.addAll(albums);
+                if (CollectionsEngine.getCollects() != null && CollectionsEngine.getCollects().getMedias().size() > 0) {
+                    mAlbums.add(CollectionsEngine.getCollects());
+                }
+                if (index >= mAlbums.size()) {
+                    index = 0;
+                }
                 dismissProgress();
                 mAlbumAdapter.refresh(mAlbums);
-                updateHeaderView(albumIndex);
+                updateHeaderView(index);
                 mMedias = new ArrayList<>();
-                mMedias.addAll(mAlbums.get(albumIndex).getMedias());
+                mMedias.addAll(mAlbums.get(index).getMedias());
                 mMediaAdapter.refresh(mMedias);
             }
 
@@ -321,6 +350,8 @@ public class HomeActivity extends AppBaseActivity {
         mTitleBar.setTitleViewText(album.getName());
         if (album.getName().toLowerCase().equals("all")) {
             mAlbumFolder.setImageResource(R.drawable.ic_cover_all);
+        } else if (album.getName().toLowerCase().equals("collects")) {
+            mAlbumFolder.setImageResource(R.drawable.ic_cover_faves);
         } else if (album.getName().toLowerCase().equals("camera")) {
             mAlbumFolder.setImageResource(R.drawable.ic_cover_camera);
         } else if (album.getName().toLowerCase().equals("screenshots")) {
@@ -365,16 +396,13 @@ public class HomeActivity extends AppBaseActivity {
                     }
                     switch (item.getItemShareType()) {
                         case ShareSheetView.ShareItem.ShareType.WECHAT:
-                            //                            shareToWx(SendMessageToWX.Req.WXSceneSession);
-                            Logger.i("WECHAT");
+                            shareToWx(SendMessageToWX.Req.WXSceneSession);
                             break;
                         case ShareSheetView.ShareItem.ShareType.MOMENTS:
-                            //                            shareToWx(SendMessageToWX.Req.WXSceneTimeline);
-                            Logger.i("MOMENTS");
+                            shareToWx(SendMessageToWX.Req.WXSceneTimeline);
                             break;
                         case ShareSheetView.ShareItem.ShareType.WXFAVORITE:
-                            //                            shareToWx(SendMessageToWX.Req.WXSceneFavorite);
-                            Logger.i("WXFAVORITE");
+                            shareToWx(SendMessageToWX.Req.WXSceneFavorite);
                             break;
                         case ShareSheetView.ShareItem.ShareType.WEIBO:
                             Logger.i("WEIBO");
@@ -392,5 +420,29 @@ public class HomeActivity extends AppBaseActivity {
             });
         }
         mBottomSheetLayout.showWithSheetView(shareSheetView);
+    }
+
+    private void regToWx() {
+        api = WXAPIFactory.createWXAPI(this, Constants.SHARE.WX.APP_ID, true);
+        api.registerApp(Constants.SHARE.WX.APP_ID);
+    }
+
+    private void shareToWx(int scene) {
+        //        WXTextObject wxTextObject = new WXTextObject();
+        //        WXImageObject imageObject = new WXImageObject();
+        //        imageObject.imagePath = mMedias.get(mDisplayViewPager.getCurrentItem()).getPath();
+        //        wxTextObject.text = "欢迎使用Piks作为你的相册管理软件。下载地址：http://fir.im/piks";
+        WXWebpageObject wxWebpageObject = new WXWebpageObject();
+        wxWebpageObject.webpageUrl = "http://fir.im/piks";
+        WXMediaMessage msg = new WXMediaMessage(wxWebpageObject);
+        msg.title = "欢迎使用Piks";
+        msg.description = "Piks是一款简单美观的相册管理软件";
+        Bitmap thumb = BitmapFactory.decodeResource(getResources(), R.drawable.ic_piks);
+        msg.thumbData = BitmapUtils.bitmapToByte(thumb);
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+        req.transaction = String.valueOf(System.currentTimeMillis());
+        req.message = msg;
+        req.scene = scene;
+        api.sendReq(req);
     }
 }

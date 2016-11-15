@@ -35,16 +35,19 @@ public class MoveSheetView extends FrameLayout {
 
     private MoveSheetView.Adapter mAdapter;
 
+    private List<MoveItem> mAlbums;
+
     private String mTitle;
     private OnMoveItemClickListener mOnMoveItemClickListener;
 
-    public MoveSheetView(Context context, int titleRes, OnMoveItemClickListener onMoveItemClickListener) {
-        this(context, context.getString(titleRes), onMoveItemClickListener);
+    public MoveSheetView(Context context, int titleRes, List<MoveItem> albums, OnMoveItemClickListener onMoveItemClickListener) {
+        this(context, context.getString(titleRes), albums, onMoveItemClickListener);
     }
 
-    public MoveSheetView(Context context, String title, OnMoveItemClickListener onMoveItemClickListener) {
+    public MoveSheetView(Context context, String title, List<MoveItem> albums, OnMoveItemClickListener onMoveItemClickListener) {
         super(context);
         this.mTitle = title;
+        this.mAlbums = albums;
         this.mOnMoveItemClickListener = onMoveItemClickListener;
 
         inflate(context, R.layout.layout_sheet_move, this);
@@ -67,7 +70,8 @@ public class MoveSheetView extends FrameLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        this.mAdapter = new MoveSheetView.Adapter(getMoveItems());
+        //        this.mAdapter = new MoveSheetView.Adapter(getMoveItems());
+        this.mAdapter = new MoveSheetView.Adapter(mAlbums);
         mListShareSheet.setAdapter(mAdapter);
     }
 
@@ -84,8 +88,8 @@ public class MoveSheetView extends FrameLayout {
     }
 
     public List<MoveItem> getMoveItems() {
-        List<MoveItem> MoveItems = new ArrayList<>();
-        return MoveItems;
+        List<MoveItem> moveItems = new ArrayList<>();
+        return moveItems;
     }
 
     public void setOnItemClickListener(OnMoveItemClickListener OnMoveItemClickListener) {
@@ -94,6 +98,57 @@ public class MoveSheetView extends FrameLayout {
 
     public interface OnMoveItemClickListener {
         void onItemClick(MoveItem item);
+    }
+
+    public static class MoveItem {
+        private int itemDisplayImgRes;
+        private String itemDisplayPath;
+        private String itemDisplayText;
+        private int size;
+        private String storageRootPath;
+        private int itemType;
+
+        public MoveItem(int itemDisplayImgRes, String itemDisplayText, String storageRootPath, int size) {
+            this.itemDisplayImgRes = itemDisplayImgRes;
+            this.itemDisplayText = itemDisplayText;
+            this.storageRootPath = storageRootPath;
+            this.size = size;
+        }
+
+        public MoveItem(String itemDisplayPath, String itemDisplayText, String storageRootPath, int size) {
+            this.itemDisplayPath = itemDisplayPath;
+            this.itemDisplayText = itemDisplayText;
+            this.storageRootPath = storageRootPath;
+            this.size = size;
+        }
+
+        public MoveItem(int itemDisplayImgRes, String itemDisplayText, String storageRootPath, int size, int itemType) {
+            this.itemDisplayImgRes = itemDisplayImgRes;
+            this.itemDisplayText = itemDisplayText;
+            this.storageRootPath = storageRootPath;
+            this.size = size;
+            this.itemType = itemType;
+        }
+
+        public String getItemDisplayPath() {
+            return itemDisplayPath;
+        }
+
+        public int getItemDisplayImgRes() {
+            return itemDisplayImgRes;
+        }
+
+        public String getItemDisplayText() {
+            return itemDisplayText;
+        }
+
+        public String getStorageRootPath() {
+            return storageRootPath;
+        }
+
+        public int getSize() {
+            return size;
+        }
     }
 
     private class Adapter extends BaseAdapter {
@@ -135,55 +190,25 @@ public class MoveSheetView extends FrameLayout {
             ImageLoader.with(getContext())
                     //                    .signature(albumDisplayEntities.get(position).getCoverMedia().signature())
                     .centerCrop().load(mItem.getItemDisplayPath()).into(mHolder.mImgItem);
-            mHolder.mTextItem.setText(mItem.getItemDisplayText());
+            mHolder.mTextNameItem.setText(mItem.getItemDisplayText());
+            mHolder.mTextSizeItem.setText(getContext().getString(R.string.album_size, String.valueOf(mItem.getSize())));
+            mHolder.mTextStorageItem.setText(mItem.getStorageRootPath());
             return convertView;
         }
 
         private class ViewHolder {
             @ViewInject(R.id.img_move_item)
             public ImageView mImgItem;
-            @ViewInject(R.id.text_move_item)
-            public TextView mTextItem;
+            @ViewInject(R.id.text_name_move_item)
+            public TextView mTextNameItem;
+            @ViewInject(R.id.text_size_move_item)
+            public TextView mTextSizeItem;
+            @ViewInject(R.id.text_storage_move_item)
+            public TextView mTextStorageItem;
 
             public ViewHolder(View view) {
                 ThinkInject.bind(this, view);
             }
         }
-    }
-
-    public class MoveItem {
-        private int itemDisplayImgRes;
-        private String itemDisplayPath;
-        private String itemDisplayText;
-        private int itemType;
-
-        public MoveItem(int itemDisplayImgRes, String itemDisplayText) {
-            this.itemDisplayImgRes = itemDisplayImgRes;
-            this.itemDisplayText = itemDisplayText;
-        }
-
-        public MoveItem(String itemDisplayPath, String itemDisplayText) {
-            this.itemDisplayPath = itemDisplayPath;
-            this.itemDisplayText = itemDisplayText;
-        }
-
-        public MoveItem(int itemDisplayImgRes, String itemDisplayText, int itemType) {
-            this.itemDisplayImgRes = itemDisplayImgRes;
-            this.itemDisplayText = itemDisplayText;
-            this.itemType = itemType;
-        }
-
-        public String getItemDisplayPath() {
-            return itemDisplayPath;
-        }
-
-        public int getItemDisplayImgRes() {
-            return itemDisplayImgRes;
-        }
-
-        public String getItemDisplayText() {
-            return itemDisplayText;
-        }
-
     }
 }

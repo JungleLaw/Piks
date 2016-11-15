@@ -1,5 +1,11 @@
 package com.law.piks.app;
 
+import android.os.Environment;
+
+import com.law.think.frame.utils.AppUtils;
+
+import java.io.File;
+
 /**
  * Created by Law on 2016/9/21.
  */
@@ -23,4 +29,10 @@ public final class Constants {
         }
     }
 
+    public final static class DOWNLOAD {
+        public final static String DOWNLOAD_FILE_PATH = Environment.getExternalStorageDirectory() + File.separator + AppUtils.getAppInfo(PiksApp.getInstance()).getPackageName() + File.separator;
+        public final static String DOWNLOAD_FILE_NAME_PREFIX = AppUtils.getAppInfo(PiksApp.getInstance()).getName() + "_";
+        public final static String DOWNLOAD_FILE_NAME_STUFIX = ".apk";
+        public final static String DOWNLOAD_FILE_NAME_TEMP_STUFIX = ".temp";
+    }
 }

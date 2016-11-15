@@ -98,6 +98,8 @@
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        <!--下载新版本-->
+        <service android:name=".others.update.UpdateService"/>
         <!-- Glide 定制 -->
         <meta-data
             android:name="com.law.piks.app.CustomGlideModule"
